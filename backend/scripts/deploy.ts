@@ -7,7 +7,7 @@ async function main() {
     const realEstateTokenization = await RealEstateTokenization.deploy();
     await realEstateTokenization.waitForDeployment();
 
-    console.log("Real Estate Tokenization Contract Address", await realEstateTokenization.getAddress())
+    console.log("RealEstateTokenization Contract Address", await realEstateTokenization.getAddress())
 }
 
 main().then( () => process.exit(0))

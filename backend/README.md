@@ -9,5 +9,7 @@ npx hardhat help
 npx hardhat test
 REPORT_GAS=true npx hardhat test
 npx hardhat node
-npx hardhat ignition deploy ./ignition/modules/Lock.ts
+npx hardhat compile
+npx hardhat run scripts/deploy.ts --network lisk-sepolia
+npx hardhat verify --network lisk-sepolia 0x2531c55dE5AcF27c23bb0A1eE71094AcCb1426c8
 ```
