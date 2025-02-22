@@ -12,4 +12,7 @@ npx hardhat node
 npx hardhat compile
 npx hardhat run scripts/deploy.ts --network lisk-sepolia
 npx hardhat verify --network lisk-sepolia 0x2531c55dE5AcF27c23bb0A1eE71094AcCb1426c8
+
+0x2531c55dE5AcF27c23bb0A1eE71094AcCb1426c8 first deployed contract 
+0x90a70d1e10990a7C2888D6a768Ef50ABBDa26611 second deployed contract
 ```

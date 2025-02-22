@@ -64,6 +64,22 @@ contract RealEstateTokenization is ERC20, Ownable {
         emit PropertyTokenized(propertyId, _propertyName, _totalTokens, _tokenPrice);
     }
 
+    // Function to get all tokenized properties
+    function getAllProperties() external view returns (Property[] memory) {
+        uint256 totalProperties = nextPropertyId;
+        Property[] memory allProperties = new Property[](totalProperties);
+
+        for (uint256 i = 0; i < totalProperties; i++) {
+            allProperties[i] = properties[i];
+        }
+
+        return allProperties;
+    }
+
+    // Function to get a single property by ID
+    function getProperty(uint256 _propertyId) external view returns (Property memory) {
+        return properties[_propertyId];
+    }
 
     //Function for investors to purchase tokens
     function purchaseTokens( uint256 _propertyId, uint256 _amountOfTokens) external payable {
