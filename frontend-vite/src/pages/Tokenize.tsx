@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import {
   useAccount,
   useWriteContract,
@@ -16,8 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import Navbar from "@/reactcomponents/Navbar";
-import Footer from "@/reactcomponents/Footer";
 import {
   Dialog,
   DialogContent,
@@ -28,11 +27,15 @@ import {
 } from "@/components/ui/dialog";
 
 const Tokenize = () => {
-  const { toast } = useToast(); // data: writeData
   const { address } = useAccount();
   const { writeContractAsync } = useWriteContract({});
 
+  const { toast } = useToast(); 
+  const navigate = useNavigate();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactionHash, setTransactionHash] = useState<`0x${string}` | undefined>(undefined);
+  const [localLoading, setLocalLoading] = useState(false);
   const [tokenizedProperty, setTokenizedProperty] = useState<{
     name: string;
     location: string;
@@ -41,13 +44,7 @@ const Tokenize = () => {
     tokenPrice: string;
   } | null>(null);
 
-  const [transactionHash, setTransactionHash] = useState<
-    `0x${string}` | undefined
-  >(undefined);
-  const [localLoading, setLocalLoading] = useState(false);
-
   const { isSuccess } = useWaitForTransactionReceipt({
-    //isLoading
     hash: transactionHash,
   });
 
@@ -179,7 +176,6 @@ const Tokenize = () => {
 
   return (
     <>
-      <Navbar />
       <div className=" mx-auto px-4 py-12 animate-fadeIn bg-gradient-to-r from-sage-100 to-terra-100">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">
@@ -260,8 +256,6 @@ const Tokenize = () => {
           </Card>
         </div>
       </div>
-      <Footer />
-
       {isModalOpen && tokenizedProperty && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent>
@@ -289,8 +283,8 @@ const Tokenize = () => {
             <DialogFooter>
               <Button
                 onClick={() => {
-                  setIsModalOpen(false);
-                  window.location.href = `/properties/1`; // Navigate to the details page (replace with dynamic ID)
+                 setIsModalOpen(false);
+                 //navigate(`/marketplace/${property.propertyId}`); // Navigate to the details page (replace with dynamic ID)
                 }}
               >
                 View Property
@@ -299,7 +293,7 @@ const Tokenize = () => {
                 variant="outline"
                 onClick={() => {
                   setIsModalOpen(false);
-                  window.location.href = "/properties";
+                  navigate(`/marketplace`);
                 }}
               >
                 Go to Properties

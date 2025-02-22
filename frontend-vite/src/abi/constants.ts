@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = "0x2531c55dE5AcF27c23bb0A1eE71094AcCb1426c8";
+export const CONTRACT_ADDRESS = "0x90a70d1e10990a7C2888D6a768Ef50ABBDa26611";
 
 export const CONTRACT_ABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
@@ -310,6 +310,54 @@ export const CONTRACT_ABI = [
     name: "distributeDividends",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "getAllProperties",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "propertyId", type: "uint256" },
+          { internalType: "string", name: "propertyName", type: "string" },
+          { internalType: "string", name: "location", type: "string" },
+          { internalType: "string", name: "images", type: "string" },
+          { internalType: "uint256", name: "totalTokens", type: "uint256" },
+          { internalType: "uint256", name: "tokenPrice", type: "uint256" },
+          { internalType: "uint256", name: "totalDividends", type: "uint256" },
+          { internalType: "address", name: "owner", type: "address" },
+          { internalType: "bool", name: "isActive", type: "bool" },
+        ],
+        internalType: "struct RealEstateTokenization.Property[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "_propertyId", type: "uint256" }],
+    name: "getProperty",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "propertyId", type: "uint256" },
+          { internalType: "string", name: "propertyName", type: "string" },
+          { internalType: "string", name: "location", type: "string" },
+          { internalType: "string", name: "images", type: "string" },
+          { internalType: "uint256", name: "totalTokens", type: "uint256" },
+          { internalType: "uint256", name: "tokenPrice", type: "uint256" },
+          { internalType: "uint256", name: "totalDividends", type: "uint256" },
+          { internalType: "address", name: "owner", type: "address" },
+          { internalType: "bool", name: "isActive", type: "bool" },
+        ],
+        internalType: "struct RealEstateTokenization.Property",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {

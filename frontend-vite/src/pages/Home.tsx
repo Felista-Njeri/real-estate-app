@@ -1,15 +1,11 @@
-import Features from "../reactcomponents/Features";
-import Footer from "../reactcomponents/Footer";
-import Hero from "../reactcomponents/Hero";
-import Navbar from "../reactcomponents/Navbar";
+import Features from "@/reactcomponents/Features";
+import Hero from "@/reactcomponents/Hero";
 
 function Home() {
   return (
     <>
-      <Navbar />
       <Hero />
       <Features />
-      <Footer />
     </>
   );
 }

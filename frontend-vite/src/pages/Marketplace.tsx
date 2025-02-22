@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
+import { useReadContract } from 'wagmi'
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,49 +12,42 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Search, MapPin } from "lucide-react";
-import Footer from "@/reactcomponents/Footer";
-import Navbar from "@/reactcomponents/Navbar";
 
-const properties = [
-  {
-    id: 1,
-    name: "Two Rivers Mall",
-    location: "Limuru Rd, Nairobi",
-    price: 0.1,
-    totalTokens: 1000,
-    availableTokens: 750,
-    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04",
-  },
-  {
-    id: 2,
-    name: "AppleWood Adams",
-    location: "Ngong Rd, Nairobi",
-    price: 0.15,
-    totalTokens: 2000,
-    availableTokens: 1200,
-    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04",
-  },
-  {
-    id: 3,
-    name: "Eagle Apartments",
-    location: "Upperhill, Nairobi",
-    price: 0.15,
-    totalTokens: 2000,
-    availableTokens: 1200,
-    image: "https://images.unsplash.com/photo-1721322800607-8c38375eef04",
-  },
-];
+interface Property {
+  propertyId: number;
+  propertyName: string;
+  location: string;
+  images: string;
+  totalTokens: bigint;
+  tokenPrice: bigint;
+  totalDividends: bigint;
+  owner: string;
+  isActive: boolean;
+}
 
-const Properties = () => {
+
+const Marketplace = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
+  const navigate = useNavigate();
+
+  const { data, isLoading, isError } = useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CONTRACT_ABI,
+    functionName: "getAllProperties",
+  });
+
+  // Typecast the data to Property[] or provide an empty array as a fallback
+  const properties: Property[] = (data as Property[]) || [];
+
+  if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
+  if (isError) return <p>Error fetching properties.</p>;
+  if (!properties.length) return <p>No properties available.</p>;
+
+
   return (
-    <>
-    <Navbar />
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
-      <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">
-        Property Marketplace
-      </h1>
+      <h1 className="text-4xl font-bold mb-8 text-gray-800 text-center">Property Marketplace</h1>
 
       <div className="max-w-xl mx-auto mb-12">
         <div className="relative">
@@ -67,24 +63,24 @@ const Properties = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {properties.map((property) => (
+        {properties.map((property: Property, index: number) => (
           <Card
-            key={property.id}
+            key={index}
             className="glass-card overflow-hidden hover-transform"
           >
             <div className="relative h-48">
               <img
-                src={property.image}
-                alt={property.name}
+                src={property.images}
+                alt={property.propertyName}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-                {property.price} ETH/token
+              {Number(property.tokenPrice) / 1e18}  ETH/token
               </div>
             </div>
 
             <CardHeader>
-              <CardTitle>{property.name}</CardTitle>
+              <CardTitle>{property.propertyName}</CardTitle>
               <CardDescription className="flex items-center">
                 <MapPin className="h-4 w-4 mr-1" />
                 {property.location}
@@ -96,15 +92,17 @@ const Properties = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Total Tokens</p>
-                    <p className="font-medium">{property.totalTokens}</p>
+                    <p className="font-medium">{property.totalTokens.toString()}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Available</p>
-                    <p className="font-medium">{property.availableTokens}</p>
+                    <p className="font-medium">{property.totalTokens.toString()}</p>
                   </div>
                 </div>
 
-                <Button className="w-full bg-sage-600 hover:bg-sage-700">
+                <Button 
+                className="w-full bg-sage-600 hover:bg-sage-700"
+                onClick={() => navigate(`/marketplace/${property.propertyId}`)}>
                   View Details
                 </Button>
               </div>
@@ -113,9 +111,7 @@ const Properties = () => {
         ))}
       </div>
     </div>
-    <Footer />
-    </>
   );
 };
 
-export default Properties;
+export default Marketplace;
