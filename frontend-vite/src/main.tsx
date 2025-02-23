@@ -5,14 +5,14 @@ import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultConfig, RainbowKitProvider} from '@rainbow-me/rainbowkit';
-import { sepolia, liskSepolia} from 'wagmi/chains';
+import { sepolia, liskSepolia, localhost} from 'wagmi/chains';
 import "./index.css";
 import App from "./App.tsx";
 
 const rainbowconfig = getDefaultConfig({
   appName: 'My RainbowKit App',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [ sepolia, liskSepolia ],
+  chains: [ sepolia, liskSepolia, localhost ],
 });
 
 const queryClient = new QueryClient();
