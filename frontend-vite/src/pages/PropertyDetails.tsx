@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
+import { useReadContract } from "wagmi";
 import { useParams } from "react-router";
+import BuyModal from "@/reactcomponents/BuyModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -10,9 +14,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { MapPin, DollarSign, Users, Clock } from "lucide-react";
+import { MapPin } from "lucide-react";
 
-// Mock data - in a real app, you'd fetch this based on the ID
+
+interface Property {
+  propertyId: number;
+  propertyName: string;
+  location: string;
+  images: string;
+  description: string;
+  totalTokens: bigint;
+  tokenPrice: bigint;
+  totalDividends: bigint;
+  owner: string;
+  isActive: boolean;
+}
+
+// Mock data
 const propertyDetails = {
   id: 1,
   name: "Luxury Apartment Complex",
@@ -26,7 +44,6 @@ const propertyDetails = {
   annualReturn: 12.5,
   images: [
     "https://images.unsplash.com/photo-1721322800607-8c38375eef04",
-    // Add more images
   ],
   amenities: [
     "24/7 Security",
@@ -51,17 +68,31 @@ const propertyDetails = {
 
 const PropertyDetails = () => {
   const { id } = useParams();
+  const [isModalOpen, setModalOpen] = useState(false);
+  
+  const { data, isLoading, isError } = useReadContract({
+    abi: CONTRACT_ABI,
+    address: CONTRACT_ADDRESS,
+    functionName: "getProperty",
+    args: [Number(id)], // Get a specific property by ID
+  });
+  
+  const property: Property | null = data ? (data as Property) : null;
+    
+  if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
+  if (isError || !property) return <p>Property not found.</p>;
+  
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
       {/* Property Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">
-          {propertyDetails.name}
+          {property.propertyName}
         </h1>
         <p className="flex items-center text-gray-600 mb-4">
           <MapPin className="h-5 w-5 mr-2" />
-          {propertyDetails.location}
+          {property.location}
         </p>
       </div>
 
@@ -72,12 +103,12 @@ const PropertyDetails = () => {
           <Card className="glass-card overflow-hidden">
             <img
               src={propertyDetails.images[0]}
-              alt={propertyDetails.name}
+              alt={property.propertyName}
               className="w-full h-[400px] object-cover"
             />
           </Card>
 
-          {/* Property Description */}
+          {/* Property Description should add in smart contract*/}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>About the Property</CardTitle>
@@ -87,7 +118,7 @@ const PropertyDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Amenities */}
+          {/* Amenities should i add into the smart contract? */}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>Amenities</CardTitle>
@@ -153,13 +184,13 @@ const PropertyDetails = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Price per Token</span>
                   <span className="font-medium">
-                    {propertyDetails.price} ETH
+                    {(Number(property.tokenPrice)) / 1e18} ETH
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Available Tokens</span>
                   <span className="font-medium">
-                    {propertyDetails.availableTokens}
+                    {property.totalTokens}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -176,13 +207,13 @@ const PropertyDetails = () => {
                 </div>
               </div>
 
+              {/* how i will calculate available tokens from total tokens */}
               <div className="space-y-2">
                 <label className="text-sm text-gray-600">Token Sale Progress</label>
                 <Progress
                   value={
                     ((propertyDetails.totalTokens - propertyDetails.availableTokens) /
-                      propertyDetails.totalTokens) *
-                    100
+                      propertyDetails.totalTokens) * 100
                   }
                 />
                 <p className="text-sm text-gray-600">
@@ -191,7 +222,10 @@ const PropertyDetails = () => {
                 </p>
               </div>
 
-              <Button className="w-full bg-sage-600 hover:bg-sage-700">
+              <Button 
+                className="w-full bg-sage-600 hover:bg-sage-700"
+                onClick={() => setModalOpen(true)}
+              >
                 Purchase Tokens
               </Button>
             </CardContent>
@@ -220,6 +254,12 @@ const PropertyDetails = () => {
           </Card>
         </div>
       </div>
+      <BuyModal 
+          propertyId={property.propertyId} 
+          tokenPrice={property.tokenPrice} 
+          isOpen={isModalOpen} 
+          onClose={() => setModalOpen(false)}
+         />
     </div>
   );
 };
