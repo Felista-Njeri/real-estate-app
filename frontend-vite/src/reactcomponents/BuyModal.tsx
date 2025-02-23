@@ -26,7 +26,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
   
   const { address } = useAccount();
 
-  const [amount, setAmount] = useState<number>(1);
+  const [amount, setAmount] = useState<number>(0);
   const [localLoading, setLocalLoading] = useState(false);
 
   const { toast } = useToast();
@@ -41,8 +41,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
     if (!address) {
       toast({
         title: "Wallet Not Connected",
-        description:
-          "Please connect your wallet before tokenizing your property.",
+        description: "Please connect your wallet before tokenizing your property.",
         variant: "destructive",
       });
       return;
@@ -60,7 +59,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
       });
       toast({
         title: "Success",
-        description: "Please sign the transaction to confirm the purchase",
+        description: `You have succesfully purchased ${amount} tokens`,
         className: "bg-green-500",
       });
     } catch (error: unknown) {
@@ -72,13 +71,11 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
         if (error.message.includes("User rejected the request")) {
           toast({
             title: "Transaction Rejected",
-            description:
-              "You rejected the transaction. Please try again if you'd like to proceed.",
+            description: "You rejected the transaction. Please try again if you'd like to proceed.",
             variant: "destructive",
           });
           return;
         }
-
         toast({
           title: "Transaction Failed",
           description: "Failed to tokenize the property. Please try again.",
@@ -94,6 +91,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
       });
     }finally {
       setLocalLoading(false); // Stop loading regardless of success or failure
+      setAmount(0);
     }
     };
 
@@ -164,7 +162,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
       className="w-full bg-sage-600 hover:bg-sage-700"
       onClick={() => navigate(`/portfolio`)}
     >
-      My Portfolio
+      View my Portfolio
     </Button>
   )}
 
