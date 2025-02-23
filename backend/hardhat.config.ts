@@ -7,6 +7,7 @@ import "dotenv/config";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "api-key";
 //const SEPOLIA_ETHERSCAN_API_KEY = process.env.SEPOLIA_ETHERSCAN_API_KEY || "api-key";
 const WALLET_PRIVATE_KEY = process.env.WALLET_PRIVATE_KEY;
+const MNEMONIC = process.env.MNEMONIC || "your mnemonic"
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -21,7 +22,13 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
+      accounts: {
+        mnemonic: MNEMONIC,
+      },
       chainId: 1337,
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545"
     },
     "lisk-sepolia": {
       url: "https://rpc.sepolia-api.lisk.com",
@@ -52,7 +59,21 @@ const config: HardhatUserConfig = {
   sourcify: {
     enabled: false,
   },
-  solidity: "0.8.27",
+  solidity: {
+    version: "0.8.27",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
+  },
 };
 
 export default config;
