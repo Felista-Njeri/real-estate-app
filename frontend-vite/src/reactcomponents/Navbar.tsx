@@ -1,14 +1,16 @@
 import { LuBuilding2 } from "react-icons/lu";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Link } from "react-router"; 
+import { useAccount } from "wagmi";
 
 const Navbar = () => {
+  const { address } = useAccount();
+
   const navItems = [
     { to: "/", label: "Home" },
     { to: "/tokenize", label: "Tokenize Property" },
     { to: "/marketplace", label: "Marketplace" },
     { to: "/compose", label: "Sign Up/In" },
-
   ];
 
   return (
@@ -28,6 +30,7 @@ const Navbar = () => {
             {item.label}
           </Link>
         ))}
+        {address && <Link to="/portfolio" className="text-gray-800 px-6">My Portfolio</Link> }
         <ConnectButton />
       </nav>
     </div>
