@@ -300,6 +300,37 @@ export const CONTRACT_ABI = [
     anonymous: false,
     inputs: [
       {
+        indexed: false,
+        internalType: "uint256",
+        name: "propertyId",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "seller",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "totalValue",
+        type: "uint256",
+      },
+    ],
+    name: "TokensSold",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
         indexed: true,
         internalType: "address",
         name: "from",
@@ -497,6 +528,11 @@ export const CONTRACT_ABI = [
           },
           {
             internalType: "uint256",
+            name: "tokensSold",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
             name: "tokenPrice",
             type: "uint256",
           },
@@ -519,6 +555,49 @@ export const CONTRACT_ABI = [
         internalType: "struct RealEstateTokenization.Property[]",
         name: "",
         type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_propertyId",
+        type: "uint256",
+      },
+    ],
+    name: "getAvailableTokens",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_propertyId",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "investor",
+        type: "address",
+      },
+    ],
+    name: "getInvestorBalanceForEachProperty",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -559,6 +638,11 @@ export const CONTRACT_ABI = [
           {
             internalType: "uint256",
             name: "totalTokens",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "tokensSold",
             type: "uint256",
           },
           {
@@ -625,6 +709,11 @@ export const CONTRACT_ABI = [
           {
             internalType: "uint256",
             name: "totalTokens",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "tokensSold",
             type: "uint256",
           },
           {
@@ -756,6 +845,11 @@ export const CONTRACT_ABI = [
       },
       {
         internalType: "uint256",
+        name: "tokensSold",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
         name: "tokenPrice",
         type: "uint256",
       },
@@ -799,6 +893,24 @@ export const CONTRACT_ABI = [
   {
     inputs: [],
     name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_propertyId",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+    ],
+    name: "sellTokens",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -940,5 +1052,9 @@ export const CONTRACT_ABI = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
+  },
+  {
+    stateMutability: "payable",
+    type: "receive",
   },
 ];
