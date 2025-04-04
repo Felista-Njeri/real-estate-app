@@ -1,13 +1,14 @@
-import InvestorPortfolio from "./pages/InvestorPortfolio.tsx";
-import PropertyDetails from "./pages/PropertyDetails.tsx";
-import Marketplace from "./pages/Marketplace.tsx";
-import Home from "./pages/Home.tsx";
-import Tokenize from "./pages/Tokenize.tsx";
-import PropertyOwner from "./pages/PropertyOwner.tsx";
-import NotFound from "./pages/NotFound.tsx";
 import { BrowserRouter, Routes, Route } from "react-router";
 import { Toaster } from "@/components/ui/toaster"; 
-import Layout from "./Layout.tsx";
+import InvestorPortfolio from "./pages/InvestorPortfolio";
+import PropertyDetails from "./pages/PropertyDetails";
+import Marketplace from "./pages/Marketplace";
+import Home from "./pages/Home";
+import Tokenize from "./pages/Tokenize";
+import PropertyOwnerPortfolio from "./pages/PropertyOwnerPortfolio";
+import NotFound from "./pages/NotFound";
+import Layout from "./Layout";
+
 
 function App() {
   return (
@@ -19,8 +20,8 @@ function App() {
           <Route path="/tokenize" element={<Tokenize />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/marketplace/:id" element={<PropertyDetails />} />
-          <Route path="/portfolio" element={<InvestorPortfolio />} />
-          <Route path="/my-properties" element={<PropertyOwner />} />
+          <Route path="/owner-portfolio" element={<PropertyOwnerPortfolio />} />
+          <Route path="/investor-portfolio" element={<InvestorPortfolio />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
