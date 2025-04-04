@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { useWriteContract } from "wagmi";
-import { useAccount} from "wagmi";
+import { useNavigate, useParams } from "react-router";
+import { useWriteContract, useReadContract, useAccount } from "wagmi";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,7 @@ interface BuyModalProps {
 }
 
 const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) => {
-  
+  const { id } = useParams();
   const { address } = useAccount();
 
   const [amount, setAmount] = useState<number>(0);
@@ -36,6 +35,13 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
 
   const { writeContractAsync, isSuccess } = useWriteContract({});
 
+  const { data: availableTokens } = useReadContract({
+    abi: CONTRACT_ABI,
+    address: CONTRACT_ADDRESS,
+    functionName: "getAvailableTokens",
+    args: [Number(id)], 
+  });
+
   const handleBuy = async () => {
     
     if (!address) {
@@ -47,9 +53,18 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
       return;
     }
 
-    setLocalLoading(true); // Start loading before calling the contract
+    if (amount > Number(availableTokens) || amount === 0 ) {
+      toast({
+        title: "Not enough tokens available",
+        description: "Please enter a number that is less than the tokens available",
+        variant: "destructive",
+      });
+      setLocalLoading(false);
+      return;
+    }
     
     try{
+      setLocalLoading(true);
       await writeContractAsync({
         abi: CONTRACT_ABI,
         address: CONTRACT_ADDRESS,
@@ -125,6 +140,10 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
               <div className="bg-sage-50 p-4 rounded-lg">
                 <h3 className="font-semibold mb-2">Purchase Summary</h3>
                 <div className="flex justify-between text-sm">
+                  <span>Available Tokens:</span>
+                  <span>{Number(availableTokens) || "0"} tokens</span>
+                </div>
+                <div className="flex justify-between text-sm">
                   <span>Amount:</span>
                   <span>{amount || "0"} tokens</span>
                 </div>
@@ -165,7 +184,6 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
       View my Portfolio
     </Button>
   )}
-
         </DialogFooter>
       </DialogContent>
     </Dialog>
