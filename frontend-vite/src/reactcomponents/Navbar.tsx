@@ -10,7 +10,7 @@ const Navbar = () => {
     { to: "/", label: "Home" },
     { to: "/tokenize", label: "Tokenize Property" },
     { to: "/marketplace", label: "Marketplace" },
-    { to: "/compose", label: "Sign Up/In" },
+    { to: "/owner-portfolio", label: "Property Owner Portfolio" },
   ];
 
   return (
