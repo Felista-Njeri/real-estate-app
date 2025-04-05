@@ -1,6 +1,6 @@
 import { LuBuilding2 } from "react-icons/lu";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { Link } from "react-router"; 
+import {  NavLink } from "react-router"; 
 import { useAccount } from "wagmi";
 
 const Navbar = () => {
@@ -15,22 +15,22 @@ const Navbar = () => {
 
   return (
     <div className="navbar px-10 flex justify-between shadow-lg shadow-gray-300">
-      <Link to="/" className="flex items-center space-x-2">
+      <NavLink to="/" className="flex items-center space-x-2">
         <LuBuilding2 className="h-6 w-6 text-sage-600" />
         <span className="font-semibold text-xl">PropChain</span>
-      </Link>
+      </NavLink>
 
       <nav className="">
         {navItems.map((item) => (
-          <Link
+          <NavLink
             key={item.to}
             to={item.to}
-            className=" text-gray-800 px-6"
+            className="text-gray-800 hover:bg-gray-200 py-3 rounded-sm px-6"
           >
             {item.label}
-          </Link>
+          </NavLink>
         ))}
-        {address && <Link to="/portfolio" className="text-gray-800 px-6">My Portfolio</Link> }
+        {address && <NavLink to="/portfolio" className="text-gray-800 px-6">My Portfolio</NavLink> }
         <ConnectButton />
       </nav>
     </div>
