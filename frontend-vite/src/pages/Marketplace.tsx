@@ -41,8 +41,14 @@ const Marketplace = () => {
     functionName: "getAllProperties",
   }); 
 
-  // Typecast the data to Property[] or provide an empty array as a fallback
   const properties: Property[] = (data as Property[]) || [];
+
+  const filteredProperties = properties.filter(
+    (p) =>
+      p.propertyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.location.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  
 
   useEffect(() => {
     const fetchAvailableTokens = async () => {
@@ -96,7 +102,7 @@ const Marketplace = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {properties.map((property: Property, index: number) => (
+        {filteredProperties.map((property: Property, index: number) => (
           <Card
             key={index}
             className="glass-card overflow-hidden hover-transform"
@@ -154,6 +160,9 @@ const Marketplace = () => {
             </CardContent>
           </Card>
         ))}
+        {!filteredProperties.length && (
+          <p className="text-center text-gray-500 col-span-full">No matching properties found.</p>
+        )}
       </div>
     </div>
   );
