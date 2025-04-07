@@ -17,11 +17,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />} >
           <Route index element={<Home />} />
-          <Route path="/tokenize" element={<Tokenize />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/marketplace/:id" element={<PropertyDetails />} />
-          <Route path="/owner-portfolio" element={<PropertyOwnerPortfolio />} />
-          <Route path="/investor-portfolio" element={<InvestorPortfolio />} />
+          <Route path="tokenize" element={<Tokenize />} />
+          <Route path="marketplace" element={<Marketplace />} />
+          <Route path="marketplace/:id" element={<PropertyDetails />} />
+          <Route path="owner-portfolio" element={<PropertyOwnerPortfolio />} />
+          <Route path="investor-portfolio" element={<InvestorPortfolio />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
