@@ -1,22 +1,28 @@
 import { useState, useEffect } from "react";
 import { useAccount, useReadContract } from "wagmi";
+import { wagmiconfig }  from "../../wagmiconfig";
+import { readContract } from '@wagmi/core';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Wallet, TrendingUp, Building2, DollarSign } from "lucide-react";
+import { Wallet, TrendingUp, Building2, DollarSign, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import SellModal from "@/reactcomponents/SellModal";
 import DepositDividendsModal from "@/reactcomponents/DepositDividendsModal";
 import ClaimDividendsModal from "@/reactcomponents/ClaimDividendsModal";
+import StatCard from '@/reactcomponents/StatCard'
 
 interface PortfolioItem {
   propertyId: number;
   propertyName: string;
+  location: string;
   value: number;
   tokens: number;
-  roi: number;
   tokenPrice: bigint;
+  totalDividends: bigint;
+  roi: number;
+  imageUrl?: string;
 }
 
 const transactionHistory = [
@@ -38,7 +44,7 @@ const transactionHistory = [
   },
 ];
 
-const InvestorPortfolio = ({ propertyId }: { propertyId: number }) => {
+const InvestorPortfolio = () => {
   const { address } = useAccount();
   const navigate = useNavigate();
 
@@ -49,68 +55,75 @@ const InvestorPortfolio = ({ propertyId }: { propertyId: number }) => {
   const [isDepositModalOpen, setDepositModalOpen] = useState(false);
   const [showClaimDividendsModal, setShowClaimDividendsModal] = useState(false);
 
-  const { data , isLoading, isError } = useReadContract({
+  const { data: properties , isLoading, isError } = useReadContract({
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
     functionName: "getInvestorHoldings",
     args: [address],
   });
-
-  const fetchInvestorBalances = async (propertyId: number) => {
-    const { data: balance } = useReadContract({
-      abi: CONTRACT_ABI,
-      address: CONTRACT_ADDRESS,
-      functionName: "getInvestorBalance",
-      args: [propertyId, address],
-    });
-    return Number(balance || 0);
-    
-  };
-
+  
   useEffect(() => {
-    if (!isLoading && Array.isArray(data)) {
-      try {
-        // Ensure data is formatted correctly
-        const formattedHoldings: PortfolioItem[] = (data as any[]).map((item) => {
-          const tokens = 0 // Fetch tokens from investorBalances
-          const value = tokens * Number(item.tokenPrice) / 1e18; // Calculate value
-          const roi = 0; // Calculate ROI (you need to implement this logic)
+    if (!isLoading && Array.isArray(properties)) {
+      const fetchHoldingsData = async () => {
+        try {
+          const holdingsData = await Promise.all(
+            properties.map(async (property: any) => {
+              // Fetch all needed data in parallel
+              const balance = await readContract( wagmiconfig, {
+                  abi: CONTRACT_ABI,
+                  address: CONTRACT_ADDRESS,
+                  functionName: "getInvestorBalanceForEachProperty",
+                  args: [Number(property.propertyId), address],
+                })
+  
+              const tokensOwned = Number(balance || 0);
+              const tokenValue = tokensOwned * Number(property.tokenPrice) / 1e18;
 
-          return {
-          propertyId: Number(item.propertyId || 0),
-          propertyName: item.propertyName || "Unknown",
-          value: value,
-          tokens: tokens,
-          roi: roi,
-          tokenPrice: BigInt(item.tokenPrice || 0),
-        };
-        });
-        console.log("Formatted holdings:", formattedHoldings)  
-        setHoldings(formattedHoldings);
-      } catch (error) {
-        console.error("Error processing holdings data:", error);
-      }
-      setLoading(false);
+              // Simple ROI calculation
+              const roi = property.tokenValue > 0 ? (Number(property.totalDividends)) / (Number(property.tokenPrice)) * 100 : 0;
+  
+              return {
+                propertyId: Number(property.propertyId),
+                propertyName: property.propertyName,
+                location: property.location,
+                value: tokenValue,
+                tokens: tokensOwned,
+                roi: roi,
+                tokenPrice: BigInt(property.tokenPrice),     
+                totalDividends: BigInt(property.totalDividends),
+              };
+            })
+          );
+          setHoldings(holdingsData);
+        } catch (error) {
+          console.error("Error fetching holdings data:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchHoldingsData();
     }
-  }, [data, isLoading, address]);
+  }, [properties, isLoading, address]);
+
 
   // Ensure calculations only run when holdings exist
-  const totalValue = holdings.reduce((acc, curr) => acc + curr.value, 0) || 0;
-  const totalTokens = holdings.reduce((acc, curr) => acc + curr.tokens, 0) || 0;
-  const averageROI =
-    holdings.length > 0
-      ? holdings.reduce((acc, curr) => acc + curr.roi, 0) / holdings.length
-      : 0;
+  // const totalValue = holdings.reduce((acc, curr) => acc + curr.value, 0) || 0;
+  // const totalTokens = holdings.reduce((acc, curr) => acc + curr.tokens, 0) || 0;
+  // const averageROI =
+  //   holdings.length > 0
+  //     ? holdings.reduce((acc, curr) => acc + curr.roi, 0) / holdings.length
+  //     : 0;
      
   const handleSellClick = (property: PortfolioItem) => {
     setSelectedProperty(property); // Set the selected property
     setModalOpen(true); // Open the modal
   };
 
-  const handleDepositDividendClick = (property: PortfolioItem) => {
-    setSelectedProperty(property); // Set the selected property
-    setDepositModalOpen(true); // Open the modal
-  };
+  // const handleDepositDividendClick = (property: PortfolioItem) => {
+  //   setSelectedProperty(property); // Set the selected property
+  //   setDepositModalOpen(true); // Open the modal
+  // };
 
   const handleClaimDividends = (property: PortfolioItem) => {
     setSelectedProperty(property); // Set the selected property
@@ -119,85 +132,134 @@ const InvestorPortfolio = ({ propertyId }: { propertyId: number }) => {
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
-      <h1 className="text-4xl font-bold mb-8">Investment Portfolio</h1>
+      <h1 className="text-4xl font-bold mb-8">Investor Portfolio</h1>
+
+      {isError && (
+  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    Error loading portfolio data. Please try again.
+  </div>
+)}
 
       {/* Key Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Total Value" value={`$${totalValue.toLocaleString()}`} icon={<DollarSign className="h-8 w-8 text-sage-600" />} />
-        <StatCard title="Total Tokens" value={totalTokens.toString()} icon={<Wallet className="h-8 w-8 text-sage-600" />} />
-        <StatCard title="Average ROI" value={`${averageROI.toFixed(1)}%`} icon={<TrendingUp className="h-8 w-8 text-sage-600" />} />
-        <StatCard title="Properties" value={holdings.length.toString()} icon={<Building2 className="h-8 w-8 text-sage-600" />} />
+        <StatCard 
+          title="Total Value" 
+          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toString()}
+          icon={<DollarSign className="h-8 w-8 text-sage-600" />} />
+        <StatCard 
+          title="Total Tokens" 
+          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toString()}
+          icon={<Wallet className="h-8 w-8 text-sage-600" />} />
+        <StatCard 
+          title="Average ROI" 
+          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toString()}
+          icon={<TrendingUp className="h-8 w-8 text-sage-600" />} />
+        <StatCard 
+          title="Properties" 
+          value={holdings.length.toString()} 
+          icon={<Building2 className="h-8 w-8 text-sage-600" />} />
       </div>
 
-      {/* Property Holdings */}
-      <Card className="glass-card mb-8">
-        <CardHeader>
-          <CardTitle>Current Holdings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-center text-gray-500 flex justify-center gap-x-2">
-              Loading holdings<span className="loading loading-spinner loading-sm"></span>
-            </p>
-          ) : isError ? (
-            <p className="text-center text-red-500">Error fetching portfolio.</p>
-          ) : holdings.length === 0 ? (
-            <p className="text-center text-gray-500">You don’t own any properties yet.</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Property</TableHead>
-                  <TableHead>Tokens Owned</TableHead>
-                  <TableHead>Value</TableHead>
-                  <TableHead>ROI</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {holdings.map((holding, index) => (
-                  <TableRow key={index}>
-                    <TableCell className="font-medium">{holding.propertyName}</TableCell>
-                    <TableCell>{holding.tokens}</TableCell>
-                    <TableCell>${holding.value.toLocaleString()}</TableCell>
-                    <TableCell className="text-sage-600">{holding.roi}%</TableCell>
-                    <TableCell>
-                      <Button
-                        className="bg-sage-600 text-white px-4 py-2 rounded-md hover:bg-sage-700"
-                        onClick={() => navigate(`/marketplace/${holding.propertyId}`)}
-                      >
-                        View Property
-                      </Button>
-                      <Button
-                        className="bg-red-600 mx-4 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                        onClick={() => handleSellClick(holding)}
-                      >
-                        Sell Property Tokens
-                      </Button>
-                      <Button
-                        className="bg-sage-600 mx-4 text-white px-4 py-2 rounded-md hover:bg-sage-700"
-                        onClick={() => handleDepositDividendClick(holding)}
-                      >
-                        Deposit Dividends
-                      </Button>
-                      <Button
-                        className="bg-sage-600 mx-4 text-white px-4 py-2 rounded-md hover:bg-sage-700"
-                        onClick={() => handleClaimDividends(holding)}
-                      > 
-                        Claim Dividends
-                      </Button>
+{/* Property Holdings */}
+<div className="mb-8 p-4 glass-card">
+  <h2 className="text-2xl font-semibold mb-4">Your Property Holdings</h2>
 
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+  {loading ? (
+    <p className="text-center text-gray-500 flex justify-center gap-x-2">
+      Loading holdings
+      <span className="loading loading-spinner loading-sm"></span>
+    </p>
+  ) : isError ? (
+    <p className="text-center text-red-500">Error fetching portfolio.</p>
+  ) : holdings.length === 0 ? (
+    <p className="text-center text-gray-500">You don’t own any properties yet.</p>
+  ) : (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {holdings.map((holding, index) => (
+        <Card
+          key={index}
+          className="glass-card hover:shadow-lg transition-shadow cursor-pointer"
+        >
+          <div className="flex flex-col md:flex-row overflow-hidden">
+            <div className="md:w-1/3 h-48 relative">
+              <div className="absolute rounded-tl-md top-0 left-0 bg-emerald-600 text-white px-3 py-1 rounded-br-md">
+                Tokenized
+              </div>
+              <img
+                src={holding.imageUrl || "/apartment.jpg"} // fallback image if not available
+                alt={holding.propertyName}
+                className="w-full h-48 rounded-md object-cover"
+              />
+            </div>
+            <div className="md:w-2/3 p-5">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h3 className="text-xl font-bold leading-tight">
+                    {holding.propertyName}
+                  </h3>
+                  <div className="flex items-center text-gray-600 mb-2">
+                    <MapPin size={16} className="mr-1" />
+                    <span className="text-sm">
+                      {holding.location || "Unknown Location"}
+                    </span>
+                  </div>
+                </div>
+                <div className="text-xl font-bold text-emerald-600">
+                  ${holding.value.toString()}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-sm text-gray-500">Tokens Owned</p>
+                  <p className="text-base font-medium">{holding.tokens}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Monthly Revenue</p>
+                  <p className="text-base font-medium">${holding.value}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">ROI</p>
+                  <p className={`text-base font-medium ${holding.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {holding.roi.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => navigate(`/marketplace/${holding.propertyId}`)}
+              >
+                View Details
+              </Button>
+              <Button 
+                size="sm" 
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+                onClick={() => handleSellClick(holding)}
+              >
+                Sell Tokens
+              </Button>
+              <Button
+                size="sm"
+                className="bg-sage-600 text-white px-4 py-2 rounded-md hover:bg-sage-700"
+                onClick={() => handleClaimDividends(holding)}
+              > 
+                Claim Dividends
+                </Button>
+            </div>
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  )}
+</div>
+
 
             {/* Transaction History */}
-            <Card className="glass-card">
+      <Card className="glass-card">
         <CardHeader>
           <CardTitle>Transaction History</CardTitle>
         </CardHeader>
@@ -240,7 +302,7 @@ const InvestorPortfolio = ({ propertyId }: { propertyId: number }) => {
           onClose={() => setModalOpen(false)}
         />
       )}
-      {/* Sell Modal */}
+      {/* Deposit Dividends Modal */}
       {selectedProperty && (
         <DepositDividendsModal
           propertyId={selectedProperty.propertyId}
@@ -248,8 +310,9 @@ const InvestorPortfolio = ({ propertyId }: { propertyId: number }) => {
           onClose={() => setDepositModalOpen(false)}
         />
       )}
-      {/* Deposit Dividends Modal */}
-        {selectedProperty && (<ClaimDividendsModal
+      {/* Claim Dividends Modal */}
+        {selectedProperty && (
+        <ClaimDividendsModal
         propertyId={selectedProperty.propertyId}
         isOpen={showClaimDividendsModal}
         onClose={() => setShowClaimDividendsModal(false)}
@@ -259,24 +322,3 @@ const InvestorPortfolio = ({ propertyId }: { propertyId: number }) => {
 };
 
 export default InvestorPortfolio;
-
-// Reusable Stat Card Component
-interface StatCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon }) => (
-  <Card className="glass-card">
-    <CardContent className="pt-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">{title}</p>
-          <h3 className="text-2xl font-bold">{value}</h3>
-        </div>
-        {icon}
-      </div>
-    </CardContent>
-  </Card>
-);
