@@ -9,6 +9,7 @@ import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -16,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -32,10 +32,12 @@ const Tokenize = () => {
 
   const { toast } = useToast(); 
   const navigate = useNavigate();
-
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionHash, setTransactionHash] = useState<`0x${string}` | undefined>(undefined);
   const [localLoading, setLocalLoading] = useState(false);
+  //const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  //const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [tokenizedProperty, setTokenizedProperty] = useState<{
     name: string;
     location: string;
@@ -44,20 +46,53 @@ const Tokenize = () => {
     tokenPrice: string;
   } | null>(null);
 
-  const { isSuccess } = useWaitForTransactionReceipt({
+  const receipt = useWaitForTransactionReceipt({
     hash: transactionHash,
   });
 
   // Watch for transaction success using useEffect
   useEffect(() => {
-    console.log("Transaction Hash:", transactionHash);
-    console.log("Transaction Success:", isSuccess);
+    //console.log("Transaction Hash:", transactionHash);
+    //console.log("Transaction Success:", receipt.isSuccess);
 
-    if (isSuccess) {
-      setIsModalOpen(true); // Open modal when transaction is confirmed
+    if (receipt.isSuccess) {
+      setIsModalOpen(true);
     }
-  }, [isSuccess, transactionHash]); // Only runs when isSuccess changes to true
+  }, [receipt.isSuccess, transactionHash]); // Only runs when isSuccess changes to true
 
+  
+  // const changeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (event.target.files) {
+  //     setSelectedFiles(Array.from(event.target.files));
+  //   }
+  // };
+  
+  // const uploadToIPFS = async () => {
+  //   if (selectedFiles.length === 0) {
+  //     toast({
+  //       title: "Please select a file",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+  //   try {
+  //     const uploadedUrls: string[] = [];
+
+  //     for (const file of selectedFiles) {
+  //       const upload = await pinata.upload.file(file);
+  //       console.log("Uploaded:", upload);
+  //       const ipfsUrl = await pinata.gateways.convert(upload.IpfsHash);
+  //       uploadedUrls.push(ipfsUrl);
+  //     }
+
+  //     setImageUrls(uploadedUrls);
+  //   } 
+  //   catch (error) {
+  //     console.error("IPFS Upload Error:", error);
+  //   }
+  // };
+
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -67,8 +102,8 @@ const Tokenize = () => {
     const totalTokens = formData.get("totalTokens") as string;
     const tokenPrice = formData.get("tokenPrice") as string;
 
-    // Check if any field is null or an empty string
-    if (!propertyName || !location || !images || !totalTokens || !tokenPrice) {
+    // !images
+    if (!propertyName || !location || !totalTokens || !tokenPrice) {
       toast({
         title: "Incomplete Form",
         description: "Please fill all required fields before submitting.",
@@ -77,7 +112,6 @@ const Tokenize = () => {
       return;
     }
 
-    // Ensure totalTokens and tokenPrice are valid numbers
     const totalTokensNumber = Number(totalTokens);
     const tokenPriceNumber = Number(tokenPrice);
 
@@ -94,19 +128,26 @@ const Tokenize = () => {
       });
       return;
     }
-    // Convert to BigInt safely
+
     const totalTokensBigInt = BigInt(totalTokensNumber);
-    const tokenPriceBigInt = BigInt(Math.floor(tokenPriceNumber * 1e18)); // Convert ETH to Wei
+    const tokenPriceBigInt = BigInt(Math.floor(tokenPriceNumber * 1e18));
 
     if (!address) {
       toast({
         title: "Wallet Not Connected",
-        description:
-          "Please connect your wallet before tokenizing your property.",
+        description: "Please connect your wallet before tokenizing your property.",
         variant: "destructive",
       });
       return;
     }
+
+    // if (imageUrls.length === 0) {
+    //   toast({
+    //     title: "Please upload an image before tokenizing",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
     setLocalLoading(true); // Start loading before calling the contract
 
@@ -122,17 +163,18 @@ const Tokenize = () => {
           totalTokensBigInt,
           tokenPriceBigInt,
         ],
-      });
+      }); //images,
 
       if (hash) {
         setTransactionHash(hash as `0x${string}`); // Store transaction hash
+     
         setTokenizedProperty({
           name: propertyName,
           location,
           images,
           totalTokens,
           tokenPrice,
-        }); // Store property details
+        });
       }
 
       toast({
@@ -149,8 +191,7 @@ const Tokenize = () => {
         if (error.message.includes("User rejected the request")) {
           toast({
             title: "Transaction Rejected",
-            description:
-              "You rejected the transaction. Please try again if you'd like to proceed.",
+            description: "You rejected the transaction. Please try again if you'd like to proceed.",
             variant: "destructive",
           });
           return;
@@ -170,7 +211,7 @@ const Tokenize = () => {
         variant: "destructive",
       });
     } finally {
-      setLocalLoading(false); // Stop loading regardless of success or failure
+      setLocalLoading(false);
     }
   };
 
@@ -200,7 +241,14 @@ const Tokenize = () => {
                     placeholder="Enter property name"
                   />
                 </div>
-
+                <div className="space-y-2">
+                <Label htmlFor="location">Images</Label>
+                <Input
+                  id="location"
+                  name="images"
+                  placeholder="Provide a detailed description of the property"
+                />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <Input
@@ -209,14 +257,30 @@ const Tokenize = () => {
                     placeholder="Property location"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="images">Images</Label>
+                {/* <div className="space-y-2">
+                  <Label htmlFor="images">Upload Property Images</Label>
                   <Input
+                    type="file"
+                    multiple
                     id="images"
                     name="images"
-                    placeholder="Property images"
+                    onChange={changeHandler}
+                    className="h-20"
                   />
-                </div>
+                  <Button onClick={uploadToIPFS} className=" bg-sage-600 hover:bg-sage-700">
+                    Upload Image
+                  </Button>
+                  {imageUrls.length > 0 && (
+                      <div className="mt-2">
+                      <p>Images Uploaded:</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {imageUrls.map((url, index) => (
+                          <img key={index} src={url} alt={`Property ${index}`} className="w-32 h-32 object-cover rounded" />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div> */}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
