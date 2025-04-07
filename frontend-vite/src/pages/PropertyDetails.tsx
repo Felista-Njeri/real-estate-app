@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { useReadContract } from "wagmi";
 import { useParams } from "react-router";
@@ -9,8 +9,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
@@ -69,19 +67,33 @@ const propertyDetails = {
 const PropertyDetails = () => {
   const { id } = useParams();
   const [isModalOpen, setModalOpen] = useState(false);
-  
-  const { data, isLoading, isError } = useReadContract({
+  const [availableTokens, setAvailableTokens] = useState(0);
+
+  const { data: availableTokensData } = useReadContract({
+    abi: CONTRACT_ABI,
+    address: CONTRACT_ADDRESS,
+    functionName: "getAvailableTokens",
+    args: [Number(id)], // Get a specific property by ID
+  });
+
+  const { data: propertyData, isLoading, isError } = useReadContract({
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
     functionName: "getProperty",
     args: [Number(id)], // Get a specific property by ID
   });
   
-  const property: Property | null = data ? (data as Property) : null;
-    
+  const property: Property | null = propertyData ? (propertyData as Property) : null;
+
+  useEffect(() => {
+    if (availableTokensData) {
+      setAvailableTokens(Number(availableTokensData))
+    }
+  }, [availableTokensData]);
+
+  
   if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
   if (isError || !property) return <p>Property not found.</p>;
-  
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
@@ -188,9 +200,15 @@ const PropertyDetails = () => {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Available Tokens</span>
+                  <span className="text-gray-600">Total Token Spply</span>
                   <span className="font-medium">
                     {property.totalTokens}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Available Tokens</span>
+                  <span className="font-medium">
+                    {availableTokens}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -212,13 +230,12 @@ const PropertyDetails = () => {
                 <label className="text-sm text-gray-600">Token Sale Progress</label>
                 <Progress
                   value={
-                    ((propertyDetails.totalTokens - propertyDetails.availableTokens) /
-                      propertyDetails.totalTokens) * 100
+                    ((Number(property.totalTokens) - availableTokens) / (Number(property.totalTokens))) * 100
                   }
                 />
                 <p className="text-sm text-gray-600">
-                  {propertyDetails.totalTokens - propertyDetails.availableTokens} of{" "}
-                  {propertyDetails.totalTokens} tokens sold
+                  {(Number(property.totalTokens)) - availableTokens} of{" "}
+                  {property.totalTokens} tokens sold
                 </p>
               </div>
 
