@@ -30,7 +30,7 @@ const Navbar = () => {
             {item.label}
           </NavLink>
         ))}
-        {address && <NavLink to="/portfolio" className="text-gray-800 px-6">My Portfolio</NavLink> }
+        {address && <NavLink to="/investor-portfolio" className="text-gray-800 px-6 hover:bg-gray-200 py-3 rounded-sm">Investor Portfolio</NavLink> }
         <ConnectButton />
       </nav>
     </div>

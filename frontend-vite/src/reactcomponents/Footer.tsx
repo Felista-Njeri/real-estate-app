@@ -3,7 +3,7 @@ import { LuBuilding2, LuTwitter, LuInstagram, LuFacebook } from "react-icons/lu"
 const Footer = () => {
   return (
     <>
-      <footer className="footer text-base-content p-10">
+      <footer className="footer text-base-content p-10 shadow-[0_-6px_6px_-1px_rgba(0,0,0,0.1)]">
         <nav>
           <h6 className="footer-title">Services</h6>
           <a className="link link-hover">Branding</a>
