@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
-import { useWriteContract,useAccount, useReadContract } from "wagmi";import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
+import { useWriteContract,useAccount, useReadContract } from "wagmi";
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,7 +27,6 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
   const [localLoading, setLocalLoading] = useState(false);
 
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const totalValue = Number(tokenPrice) * amount / 1e18;
 
@@ -36,8 +35,8 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
   const { data: investorBalance } = useReadContract({
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
-    functionName: "balanceOf",
-    args: [address], // Fetch the investor's token balance for this property
+    functionName: "getInvestorBalanceForEachProperty",
+    args: [propertyId, address],
   });
 
   const handleSell = async () => {
@@ -175,7 +174,7 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
   ) : (
     <Button 
       className="w-full bg-sage-600 hover:bg-sage-700"
-      onClick={() => navigate(`/portfolio`)}
+      onClick={onClose}
     >
       Close
     </Button>

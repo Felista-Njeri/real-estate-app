@@ -179,7 +179,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
   ) : (
     <Button 
       className="w-full bg-sage-600 hover:bg-sage-700"
-      onClick={() => navigate(`/portfolio`)}
+      onClick={() => navigate(`/investor-portfolio`)}
     >
       View my Portfolio
     </Button>
