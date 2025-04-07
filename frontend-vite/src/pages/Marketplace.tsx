@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useReadContract } from 'wagmi'
+import { readContract } from '@wagmi/core'
+import { wagmiconfig } from "../../wagmiconfig";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +20,7 @@ interface Property {
   propertyName: string;
   location: string;
   images: string;
+  description: string;
   totalTokens: bigint;
   tokenPrice: bigint;
   totalDividends: bigint;
@@ -28,17 +31,47 @@ interface Property {
 
 const Marketplace = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [availableTokensMap, setAvailableTokensMap] = useState<{ [key: number]: number }>({});
+  
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: "getAllProperties",
-  });
+  }); 
 
   // Typecast the data to Property[] or provide an empty array as a fallback
   const properties: Property[] = (data as Property[]) || [];
+
+  useEffect(() => {
+    const fetchAvailableTokens = async () => {
+      if (!properties.length) return;
+  
+      const tokenMap: { [key: number]: number } = {};
+  
+      await Promise.all(
+        properties.map(async (property) => {
+          try {
+            const tokens = await readContract( wagmiconfig, {
+              address: CONTRACT_ADDRESS,
+              abi: CONTRACT_ABI,
+              functionName: 'getAvailableTokens',
+              args: [property.propertyId],
+            });
+  
+            tokenMap[property.propertyId] = Number(tokens);
+          } catch (err) {
+            console.error(`Error fetching tokens for property ${property.propertyId}`, err);
+          }
+        })
+      );
+      setAvailableTokensMap(tokenMap);
+    };
+  
+    fetchAvailableTokens();
+  }, [properties]);
+  
 
   if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
   if (isError) return <p>Error fetching properties.</p>;
@@ -95,8 +128,20 @@ const Marketplace = () => {
                     <p className="font-medium">{property.totalTokens.toString()}</p>
                   </div>
                   <div>
-                    <p className="text-gray-500">Available</p>
-                    <p className="font-medium">{property.totalTokens.toString()}</p>
+                    <p className="text-gray-500">Available Tokens</p>
+                    <p className="font-medium">
+                        {availableTokensMap[property.propertyId] !== undefined
+                        ? availableTokensMap[property.propertyId]
+                        : "Loading..."}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Total Value</p>
+                    <p className="font-medium">{(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18)} ETH</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Dividends</p>
+                    <p className="font-medium">{Number(property.totalDividends) / 1e18} ETH</p>
                   </div>
                 </div>
 
