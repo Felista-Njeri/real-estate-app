@@ -21,6 +21,7 @@ contract RealEstateTokenization is ERC20, Ownable {
     mapping(uint256 => Property) public properties;  //Mapping to store properties by their ID
     mapping(uint256 => mapping(address => uint256)) public investorBalances;  //Mapping to track investor token balances for each property
     mapping(uint256 => mapping(address => uint256)) public claimedDividends;  //Mapping to track claimed dividends for each investor
+    mapping(address => uint256[]) public ownerToProperties; //Mapping to track which owner owns which property
 
     //Counter to generate unique property IDs
     uint256 public nextPropertyId = 1;
@@ -57,6 +58,8 @@ contract RealEstateTokenization is ERC20, Ownable {
             owner: msg.sender,
             isActive: true 
         });
+
+        ownerToProperties[msg.sender].push(propertyId);
 
         _mint(address(this), _totalTokens);  //Mint the total tokens to the contract itself
 
@@ -235,6 +238,19 @@ contract RealEstateTokenization is ERC20, Ownable {
         emit FundsWithdrawn(_propertyId, property.owner, contractBalance);
 
     }
+
+    //Function to get properties an owner has tokenized
+    function getPropertiesByOwner(address _owner) external view returns (Property[] memory) {
+    uint256[] memory propertyIds = ownerToProperties[_owner];
+    Property[] memory ownerProperties = new Property[](propertyIds.length);
+
+    for (uint256 i = 0; i < propertyIds.length; i++) {
+        ownerProperties[i] = properties[propertyIds[i]];
+    }
+
+    return ownerProperties;
+}
+
 
 }
 
