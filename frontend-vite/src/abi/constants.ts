@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 export const CONTRACT_ABI = [
   {
@@ -677,6 +677,77 @@ export const CONTRACT_ABI = [
   {
     inputs: [
       {
+        internalType: "address",
+        name: "_owner",
+        type: "address",
+      },
+    ],
+    name: "getPropertiesByOwner",
+    outputs: [
+      {
+        components: [
+          {
+            internalType: "uint256",
+            name: "propertyId",
+            type: "uint256",
+          },
+          {
+            internalType: "string",
+            name: "propertyName",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "location",
+            type: "string",
+          },
+          {
+            internalType: "string",
+            name: "images",
+            type: "string",
+          },
+          {
+            internalType: "uint256",
+            name: "totalTokens",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "tokensSold",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "tokenPrice",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "totalDividends",
+            type: "uint256",
+          },
+          {
+            internalType: "address",
+            name: "owner",
+            type: "address",
+          },
+          {
+            internalType: "bool",
+            name: "isActive",
+            type: "bool",
+          },
+        ],
+        internalType: "struct RealEstateTokenization.Property[]",
+        name: "",
+        type: "tuple[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "uint256",
         name: "_propertyId",
         type: "uint256",
@@ -803,6 +874,30 @@ export const CONTRACT_ABI = [
         internalType: "address",
         name: "",
         type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "ownerToProperties",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
       },
     ],
     stateMutability: "view",
