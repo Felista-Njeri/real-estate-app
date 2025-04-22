@@ -25,6 +25,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { uploadFileToPinata } from "../utils/pinata";
 
 const Tokenize = () => {
   const { address } = useAccount();
@@ -36,8 +37,9 @@ const Tokenize = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionHash, setTransactionHash] = useState<`0x${string}` | undefined>(undefined);
   const [localLoading, setLocalLoading] = useState(false);
-  //const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  //const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
   const [tokenizedProperty, setTokenizedProperty] = useState<{
     name: string;
     location: string;
@@ -61,36 +63,50 @@ const Tokenize = () => {
   }, [receipt.isSuccess, transactionHash]); // Only runs when isSuccess changes to true
 
   
-  // const changeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (event.target.files) {
-  //     setSelectedFiles(Array.from(event.target.files));
-  //   }
-  // };
+  const changeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFiles(Array.from(event.target.files));
+    }
+  };
   
-  // const uploadToIPFS = async () => {
-  //   if (selectedFiles.length === 0) {
-  //     toast({
-  //       title: "Please select a file",
-  //       variant: "destructive",
-  //     });
-  //     return;
-  //   }
-  //   try {
-  //     const uploadedUrls: string[] = [];
+  const uploadToIPFS = async () => {
+    setIsUploading(true)
+    if (selectedFiles.length === 0) {
+      toast({
+        title: "Please select a file",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      // Use Promise.all to upload all images concurrently
+      const uploadPromises = selectedFiles.map(async (file) => {
+        return await uploadFileToPinata(file); // map returns the URL directly
+      });
 
-  //     for (const file of selectedFiles) {
-  //       const upload = await pinata.upload.file(file);
-  //       console.log("Uploaded:", upload);
-  //       const ipfsUrl = await pinata.gateways.convert(upload.IpfsHash);
-  //       uploadedUrls.push(ipfsUrl);
-  //     }
+      const uploadedUrls = await Promise.all(uploadPromises); // wait for all to finish
 
-  //     setImageUrls(uploadedUrls);
-  //   } 
-  //   catch (error) {
-  //     console.error("IPFS Upload Error:", error);
-  //   }
-  // };
+      console.log("Uploaded Image URLs:", uploadedUrls); // safe and ordered
+  
+      setImageUrls(uploadedUrls);
+
+      toast({
+        title: "Images uploaded to IPFS",
+        description: `${uploadedUrls.length} image(s) uploaded.`,
+        className: "bg-green-500",
+      });
+    } 
+    catch (error) {
+      console.error("IPFS Upload Error:", error);
+      toast({
+        title: "Upload Failed",
+        description: "Error uploading images to IPFS.",
+        variant: "destructive",
+      });
+    } finally{
+      setIsUploading(false)
+    }
+  };
 
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -98,7 +114,6 @@ const Tokenize = () => {
     const formData = new FormData(e.currentTarget);
     const propertyName = formData.get("propertyName") as string;
     const location = formData.get("location") as string;
-    const images = formData.get("images") as string;
     const totalTokens = formData.get("totalTokens") as string;
     const tokenPrice = formData.get("tokenPrice") as string;
 
@@ -141,17 +156,19 @@ const Tokenize = () => {
       return;
     }
 
-    // if (imageUrls.length === 0) {
-    //   toast({
-    //     title: "Please upload an image before tokenizing",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
+    if (imageUrls.length === 0) {
+      toast({
+        title: "Please upload an image before tokenizing",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    setLocalLoading(true); // Start loading before calling the contract
+    setLocalLoading(true); 
 
     try {
+      const images = imageUrls.join(",");
+
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
@@ -163,7 +180,7 @@ const Tokenize = () => {
           totalTokensBigInt,
           tokenPriceBigInt,
         ],
-      }); //images,
+      });
 
       if (hash) {
         setTransactionHash(hash as `0x${string}`); // Store transaction hash
@@ -183,11 +200,8 @@ const Tokenize = () => {
         className: "bg-green-500",
       });
     } catch (error: unknown) {
-      console.error("Caught error:", error);
 
       if (error instanceof Error) {
-        console.log("Error message:", error.message);
-
         if (error.message.includes("User rejected the request")) {
           toast({
             title: "Transaction Rejected",
@@ -242,14 +256,6 @@ const Tokenize = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                <Label htmlFor="location">Images</Label>
-                <Input
-                  id="location"
-                  name="images"
-                  placeholder="Provide a detailed description of the property"
-                />
-                </div>
-                <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
@@ -257,7 +263,15 @@ const Tokenize = () => {
                     placeholder="Property location"
                   />
                 </div>
-                {/* <div className="space-y-2">
+                <div className="space-y-2">
+                <Label htmlFor="location">Description</Label>
+                <Input
+                  id="description"
+                  name="description"
+                  placeholder="Provide a detailed description of the property"
+                />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="images">Upload Property Images</Label>
                   <Input
                     type="file"
@@ -267,20 +281,36 @@ const Tokenize = () => {
                     onChange={changeHandler}
                     className="h-20"
                   />
-                  <Button onClick={uploadToIPFS} className=" bg-sage-600 hover:bg-sage-700">
-                    Upload Image
+                  <Button 
+                    onClick={uploadToIPFS} 
+                    className=" bg-sage-600 hover:bg-sage-700"
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                        <>
+                          Uploading...
+                          <span className="loading loading-spinner loading-sm ml-2"></span>
+                        </>
+                      ) : ( 
+                      "Upload Images" 
+                    )}
                   </Button>
+                  
                   {imageUrls.length > 0 && (
                       <div className="mt-2">
                       <p>Images Uploaded:</p>
                       <div className="grid grid-cols-3 gap-2">
                         {imageUrls.map((url, index) => (
-                          <img key={index} src={url} alt={`Property ${index}`} className="w-32 h-32 object-cover rounded" />
+                          <img
+                           key={index}
+                           src={url} 
+                           alt={`Property ${index}`} 
+                           className="w-32 h-32 object-cover rounded" />
                         ))}
                       </div>
                     </div>
                   )}
-                </div> */}
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
