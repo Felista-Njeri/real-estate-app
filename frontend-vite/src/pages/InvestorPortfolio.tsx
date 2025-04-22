@@ -12,6 +12,19 @@ import SellModal from "@/reactcomponents/SellModal";
 import DepositDividendsModal from "@/reactcomponents/DepositDividendsModal";
 import ClaimDividendsModal from "@/reactcomponents/ClaimDividendsModal";
 import StatCard from '@/reactcomponents/StatCard'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 
 interface PortfolioItem {
   propertyId: number;
@@ -42,6 +55,26 @@ const transactionHistory = [
     tokens: null,
     price: 250,
   },
+];
+
+// Mock data for portfolio value history
+const portfolioHistory = [
+  { date: "2023-10", value: 150000 },
+  { date: "2023-11", value: 155000 },
+  { date: "2023-12", value: 158000 },
+  { date: "2024-01", value: 162000 },
+  { date: "2024-02", value: 165000 },
+  { date: "2024-03", value: 170000 },
+];
+
+// Colors for pie chart
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
 ];
 
 const InvestorPortfolio = () => {
@@ -158,6 +191,80 @@ const InvestorPortfolio = () => {
           title="Properties" 
           value={holdings.length.toString()} 
           icon={<Building2 className="h-8 w-8 text-sage-600" />} />
+      </div>
+
+           {/* Portfolio Charts */}
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Portfolio Value History Chart */}
+        <Card className="glass-card p-4">
+          <CardHeader>
+            <CardTitle>Portfolio Value History</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={portfolioHistory}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip
+                  formatter={(value) => [`$${value.toLocaleString()}`, "Value"]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#16a34a"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Portfolio Distribution Chart */}
+        <Card className="glass-card p-4">
+          <CardHeader>
+            <CardTitle>Portfolio Distribution</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={holdings}
+                  dataKey="value"
+                  nameKey="propertyName"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                >
+                  {holdings.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value, entry, index) => {
+                    const item = holdings[index];
+                    const percentage = (
+                      (item.value /
+                        holdings.reduce((sum, h) => sum + h.value, 0)) *
+                      100
+                    ).toFixed(1);
+                    return `${value.slice(0, 15)}... (${percentage}%)`;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
 {/* Property Holdings */}

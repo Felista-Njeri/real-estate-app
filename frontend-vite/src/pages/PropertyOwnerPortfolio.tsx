@@ -23,26 +23,38 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
 
-// Sample data
-const groupsData = [
-  { name: "Jan", value: 65 },
-  { name: "Feb", value: 78 },
-  { name: "Mar", value: 95 },
-  { name: "Apr", value: 110 },
-  { name: "May", value: 125 },
-  { name: "Jun", value: 142 },
-  { name: "Jul", value: 160 },
+// Mock data for portfolio value history
+const portfolioHistory = [
+  { date: "2023-10", value: 150000 },
+  { date: "2023-11", value: 155000 },
+  { date: "2023-12", value: 158000 },
+  { date: "2024-01", value: 162000 },
+  { date: "2024-02", value: 165000 },
+  { date: "2024-03", value: 170000 },
 ];
 
-const fundingData = [
-  { name: "Jan", value: 125000 },
-  { name: "Feb", value: 185000 },
-  { name: "Mar", value: 245000 },
-  { name: "Apr", value: 310000 },
-  { name: "May", value: 375000 },
-  { name: "Jun", value: 450000 },
-  { name: "Jul", value: 525000 },
+// Colors for pie chart
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#8884D8",
+  "#82CA9D",
 ];
 
 // const properties = [
@@ -260,6 +272,81 @@ const PropertyOwnerPortfolio = () => {
         </Card>
       </div>
 
+              {/* Portfolio Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Portfolio Value History Chart */}
+        <Card className="glass-card p-4">
+          <CardHeader>
+            <CardTitle>Portfolio Value History</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={portfolioHistory}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip
+                  formatter={(value) => [`$${value.toLocaleString()}`, "Value"]}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#16a34a"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Portfolio Distribution Chart */}
+        <Card className="glass-card p-4">
+          <CardHeader>
+            <CardTitle>Portfolio Distribution</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={properties}
+                  dataKey="value"
+                  nameKey="propertyName"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                >
+                  {properties.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                <Legend
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="middle"
+                  formatter={(value, entry, index) => {
+                    const item = properties[index];
+                    const percentage = (
+                      (Number(item.tokenPrice) /
+                        properties.reduce((sum, h) => sum + Number(h.tokenPrice), 0)) *
+                      100
+                    ).toFixed(1);
+                    return `${String(item.tokenPrice).slice(0, 15)}... (${percentage}%)`;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+
       {/* Properties Cards */}
       <div className="mb-8 glass-card p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
@@ -349,35 +436,6 @@ const PropertyOwnerPortfolio = () => {
             </Card>
           ))}
         </div>
-      </div>
-
-      {/* Property Details and Analytics */}
-      <div className="grid gap-6 md:grid-cols-2 mb-6">
-        <AnalyticsChart
-          title="Group Growth"
-          subtitle="Monthly registered groups"
-          data={groupsData}
-          dataKey="value"
-          color="#4CAF50"
-          action={
-            <Button variant="ghost" size="sm" className="text-green-500">
-              Details <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          }
-        />
-        
-        <AnalyticsChart
-          title="Funding Distribution"
-          subtitle="Total funding distributed (KES)"
-          data={fundingData}
-          dataKey="value"
-          color="#4CAF50"
-          action={
-            <Button variant="ghost" size="sm" className="text-green-500">
-              Details <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          }
-        />
       </div>
 
       {/* Dividend Distribution History */}
