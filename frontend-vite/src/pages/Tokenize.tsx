@@ -5,6 +5,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from "wagmi";
+import { readContract } from '@wagmi/core'
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { uploadFileToPinata } from "../utils/pinata";
+import { uploadFileToPinata, uploadMetadataToPinata } from "../utils/pinata";
+import { wagmiconfig } from "../../wagmiconfig";
 
 const Tokenize = () => {
   const { address } = useAccount();
@@ -34,6 +36,7 @@ const Tokenize = () => {
   const { toast } = useToast(); 
   const navigate = useNavigate();
   
+  const [newPropertyId, setNewPropertyId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionHash, setTransactionHash] = useState<`0x${string}` | undefined>(undefined);
   const [localLoading, setLocalLoading] = useState(false);
@@ -107,17 +110,16 @@ const Tokenize = () => {
       setIsUploading(false)
     }
   };
-
   
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const propertyName = formData.get("propertyName") as string;
     const location = formData.get("location") as string;
+    const description = formData.get("description") as string;
     const totalTokens = formData.get("totalTokens") as string;
     const tokenPrice = formData.get("tokenPrice") as string;
 
-    // !images
     if (!propertyName || !location || !totalTokens || !tokenPrice) {
       toast({
         title: "Incomplete Form",
@@ -169,14 +171,20 @@ const Tokenize = () => {
     try {
       const images = imageUrls.join(",");
 
+      const metadata = {
+        propertyName: propertyName,
+        location: location,
+        description: description,
+        images: images,
+      };
+      const metadatacid = await uploadMetadataToPinata(metadata);
+
       const hash = await writeContractAsync({
         address: CONTRACT_ADDRESS,
         abi: CONTRACT_ABI,
         functionName: "tokenizeProperty",
         args: [
-          propertyName,
-          location,
-          images,
+          metadatacid,
           totalTokensBigInt,
           tokenPriceBigInt,
         ],
@@ -229,6 +237,31 @@ const Tokenize = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchLatestPropertyId = async () => {
+      try {
+        const latestPropertyId = await readContract( wagmiconfig, {
+          address: CONTRACT_ADDRESS,
+          abi: CONTRACT_ABI,
+          functionName: 'getLatestPropertyId',
+        });
+        setNewPropertyId(Number(latestPropertyId));
+      } catch (error) {
+        console.error("Failed to fetch latest property ID:", error);
+        toast({
+          title: "Navigation Failed",
+          description: "Could not retrieve the new property ID.",
+          variant: "destructive",
+        });
+      }
+    };
+  
+    if (receipt.isSuccess) {
+      setIsModalOpen(true);
+      fetchLatestPropertyId();
+    }
+  }, [receipt.isSuccess]);
+  
   return (
     <>
       <div className=" mx-auto px-4 py-12 animate-fadeIn bg-gradient-to-r from-sage-100 to-terra-100">
@@ -264,10 +297,11 @@ const Tokenize = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                <Label htmlFor="location">Description</Label>
+                <Label htmlFor="description">Description</Label>
                 <Input
                   id="description"
                   name="description"
+                  className="h-20 py-0"
                   placeholder="Provide a detailed description of the property"
                 />
                 </div>
@@ -364,6 +398,15 @@ const Tokenize = () => {
               <p>
                 <strong>Property Name:</strong> {tokenizedProperty.name}
               </p>
+              <div className="grid grid-cols-3 gap-2">
+                 {imageUrls.map((url, index) => (
+                   <img
+                    key={index}
+                    src={url} 
+                    alt={`Property ${index}`} 
+                    className="w-32 h-32 object-cover rounded" />
+                  ))}
+              </div>
               <p>
                 <strong>Location:</strong> {tokenizedProperty.location}
               </p>
@@ -378,7 +421,7 @@ const Tokenize = () => {
               <Button
                 onClick={() => {
                  setIsModalOpen(false);
-                 //navigate(`/marketplace/${property.propertyId}`); // Navigate to the details page (replace with dynamic ID)
+                 navigate(`/marketplace/${newPropertyId}`); 
                 }}
               >
                 View Property
