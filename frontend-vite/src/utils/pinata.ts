@@ -28,7 +28,6 @@ export const uploadFileToPinata = async (file: File): Promise<string> => {
 
     // Get the response with the CID from Pinata
     const uploadData = await uploadRes.json();
-    console.log("Pinata upload response:", uploadData);
 
     const { data: { cid } } = uploadData;
     console.log("The CID is", cid)
@@ -44,4 +43,50 @@ export const uploadFileToPinata = async (file: File): Promise<string> => {
   } catch (error) {
     throw new Error(`Upload failed: ${error instanceof Error ? error.message : String(error)}`);
   }
+};
+
+export const uploadMetadataToPinata = async (metadata: object): Promise<string> => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/upload_metadata`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(metadata),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to upload metadata to Pinata");
+    }
+
+    const { cid: {cid} } = await res.json();
+    console.log("CID", cid)
+
+    const gateway = import.meta.env.VITE_PINATA_GATEWAY_URL;
+    if (!gateway) throw new Error("Missing VITE_GATEWAY_URL in environment");
+
+    const ipfsUrl = `${gateway}/ipfs/${cid}`;
+    console.log("IPFSURL", ipfsUrl)
+
+    return cid;
+
+  } catch (err) {
+    throw new Error(`Metadata upload failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
+};
+
+export const fetchMetadataFromIPFS = async (cid: string): Promise<any> => {
+  const gateway = import.meta.env.VITE_PINATA_GATEWAY_URL;
+  if (!gateway) throw new Error("Missing VITE_PINATA_GATEWAY_URL");
+
+  const url = `${gateway}/ipfs/${cid}`;
+  console.log("cid is", cid)
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch metadata from IPFS bombooo: ${res.statusText}`);
+  }
+
+  return res.json();
 };
