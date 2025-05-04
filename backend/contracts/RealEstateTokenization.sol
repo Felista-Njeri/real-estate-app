@@ -7,9 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract RealEstateTokenization is ERC20, Ownable {
     struct Property{
         uint256 propertyId;
-        string propertyName;
-        string location;
-        string images; 
+        string metadataCID;
         uint256 totalTokens;
         uint256 tokensSold;
         uint256 tokenPrice;
@@ -24,9 +22,9 @@ contract RealEstateTokenization is ERC20, Ownable {
     mapping(address => uint256[]) public ownerToProperties; //Mapping to track which owner owns which property
 
     //Counter to generate unique property IDs
-    uint256 public nextPropertyId = 1;
+    uint256 public nextPropertyId;
     
-    event PropertyTokenized( uint256 propertyId, string propertyName, uint256 totalTokens, uint256 tokenPrice);
+    event PropertyTokenized( uint256 propertyId, uint256 totalTokens, uint256 tokenPrice);
     event TokensPurchased( uint256 propertyId, address investor, uint256 amount);
     event DividendsDistributed(uint256 propertyId, uint256 totalDividends);
     event DividendsClaimed(uint256 propertyId, address investor, uint256 amount);
@@ -38,7 +36,7 @@ contract RealEstateTokenization is ERC20, Ownable {
     constructor() ERC20("RealEstateToken", "RET") Ownable(msg.sender) {}
 
     //Function to tokenize a new property
-    function tokenizeProperty( string memory _propertyName, string memory _location, string memory _images, uint256 _totalTokens, uint256 _tokenPrice) external {
+    function tokenizeProperty( string memory _metadataCID, uint256 _totalTokens, uint256 _tokenPrice) external {
         require(_totalTokens > 0, "Total tokens must be greater than 0");
         require(_tokenPrice > 0, "Token price must be greater than 0");
 
@@ -48,9 +46,7 @@ contract RealEstateTokenization is ERC20, Ownable {
         //Create a new Property Struct and store it in the mapping
         properties[propertyId] = Property({
             propertyId: propertyId,
-            propertyName: _propertyName,
-            location: _location,
-            images: _images,
+            metadataCID: _metadataCID,
             totalTokens: _totalTokens,
             tokensSold: 0,
             tokenPrice: _tokenPrice,
@@ -63,7 +59,12 @@ contract RealEstateTokenization is ERC20, Ownable {
 
         _mint(address(this), _totalTokens);  //Mint the total tokens to the contract itself
 
-        emit PropertyTokenized(propertyId, _propertyName, _totalTokens, _tokenPrice);
+        emit PropertyTokenized(propertyId, _totalTokens, _tokenPrice);
+    }
+
+    function getLatestPropertyId() external view returns (uint256) {
+    require(nextPropertyId > 0, "No properties created yet.");
+    return nextPropertyId - 1;
     }
 
     // Function to get all tokenized properties
