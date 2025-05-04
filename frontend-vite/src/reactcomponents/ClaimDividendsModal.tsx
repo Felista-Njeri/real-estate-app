@@ -169,7 +169,7 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
           ) : (
             <Button
               className="w-full bg-sage-600 hover:bg-sage-700"
-              onClick={() => navigate(`/portfolio`)}
+              onClick={() => navigate(`/investor-portfolio`)}
             >
               Close
             </Button>

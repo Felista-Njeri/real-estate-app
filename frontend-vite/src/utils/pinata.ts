@@ -85,7 +85,7 @@ export const fetchMetadataFromIPFS = async (cid: string): Promise<any> => {
   const res = await fetch(url);
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch metadata from IPFS bombooo: ${res.statusText}`);
+    throw new Error(`Failed to fetch metadata from IPFS: ${res.statusText}`);
   }
 
   return res.json();

@@ -398,6 +398,9 @@ const Tokenize = () => {
               <p>
                 <strong>Property Name:</strong> {tokenizedProperty.name}
               </p>
+              <p>
+                <strong>Images Uploaded:</strong>
+              </p>
               <div className="grid grid-cols-3 gap-2">
                  {imageUrls.map((url, index) => (
                    <img

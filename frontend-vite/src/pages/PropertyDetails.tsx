@@ -116,19 +116,33 @@ const PropertyDetails = () => {
         const cid = property.metadataCID;
         const data = await fetchMetadataFromIPFS(cid);
         setPropertyMetadata(data);
-        
       } catch (err) {
         console.error("Failed to fetch property metadata:", err);
+      } finally{
+        return null
       }
     };
   
     loadMetadata();
   }, [propertyData]);
-
   
-  if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
-  if (isError || !property) return <p>Property not found.</p>;
-  if (!propertyMetadata) return <p>Loading metadata</p>;
+  if (isLoading) return (
+    <div className="flex justify-center items-center h-screen gap-4">
+      <p>Loading</p>
+      <span className="loading loading-spinner loading-md"></span>
+    </div>
+  )
+  if (isError || !property) return(
+    <div className="h-screen flex justify-center items-center">
+      <strong className="text-red-500 text-lg" >Property Not Found </strong>
+    </div>
+  )
+  if (!propertyMetadata) return (
+    <div className="h-screen flex justify-center items-center gap-2">
+      <p>Loading metadata</p>
+      <span className="loading loading-spinner loading-md"></span>
+    </div>
+  )
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">

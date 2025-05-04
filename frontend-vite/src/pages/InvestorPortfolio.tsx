@@ -365,7 +365,7 @@ const InvestorPortfolio = () => {
 </div>
 
 
-            {/* Transaction History */}
+      {/* Transaction History */}
       <Card className="glass-card">
         <CardHeader>
           <CardTitle>Transaction History</CardTitle>
