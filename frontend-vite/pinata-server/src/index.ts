@@ -12,6 +12,20 @@ app.use(cors())
 
 app.get('/', (c) => c.text('Hello from local Hono!'))
 
+app.post('/upload_metadata', async (c) => {
+  const body = await c.req.json()
+
+  const pinata = new PinataSDK({
+    pinataJwt: process.env.PINATA_JWT,
+    pinataGateway: process.env.GATEWAY_URL
+  });
+
+  const result = await pinata.upload.public.json(body)
+
+  return c.json({ cid: result }) // or result.cid if that's your Pinata SDK format
+})
+
+
 app.get('/presigned_url', async (c) => {
   const pinata = new PinataSDK({
     pinataJwt: process.env.PINATA_JWT,
