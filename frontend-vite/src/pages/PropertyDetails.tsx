@@ -12,20 +12,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
-import { MapPin } from "lucide-react";
-
+import { MapPin, ChevronLeft, ChevronRight  } from "lucide-react";
+import { fetchMetadataFromIPFS } from "@/utils/pinata"
 
 interface Property {
   propertyId: number;
-  propertyName: string;
-  location: string;
-  images: string;
-  description: string;
-  totalTokens: bigint;
+  metadataCID: string
   tokenPrice: bigint;
+  tokensSold: bigint;
   totalDividends: bigint;
+  totalTokens: bigint;
   owner: string;
   isActive: boolean;
+}
+
+interface PropertyMetaData {
+  propertyName: string,
+  location: string,
+  description:string,
+  images: string
 }
 
 // Mock data
@@ -68,6 +73,18 @@ const PropertyDetails = () => {
   const { id } = useParams();
   const [isModalOpen, setModalOpen] = useState(false);
   const [availableTokens, setAvailableTokens] = useState(0);
+  const [propertyMetadata, setPropertyMetadata] = useState<PropertyMetaData | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const images: string[] = propertyMetadata?.images?.split(",") ?? [];
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+  
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
 
   const { data: availableTokensData } = useReadContract({
     abi: CONTRACT_ABI,
@@ -82,7 +99,7 @@ const PropertyDetails = () => {
     functionName: "getProperty",
     args: [Number(id)], // Get a specific property by ID
   });
-  
+
   const property: Property | null = propertyData ? (propertyData as Property) : null;
 
   useEffect(() => {
@@ -91,20 +108,38 @@ const PropertyDetails = () => {
     }
   }, [availableTokensData]);
 
+  useEffect(() => {
+    const loadMetadata = async () => {
+      if (!property) return;
+  
+      try {
+        const cid = property.metadataCID;
+        const data = await fetchMetadataFromIPFS(cid);
+        setPropertyMetadata(data);
+        
+      } catch (err) {
+        console.error("Failed to fetch property metadata:", err);
+      }
+    };
+  
+    loadMetadata();
+  }, [propertyData]);
+
   
   if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
   if (isError || !property) return <p>Property not found.</p>;
+  if (!propertyMetadata) return <p>Loading metadata</p>;
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
       {/* Property Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">
-          {property.propertyName}
+          {propertyMetadata.propertyName}
         </h1>
         <p className="flex items-center text-gray-600 mb-4">
           <MapPin className="h-5 w-5 mr-2" />
-          {property.location}
+          {propertyMetadata.location}
         </p>
       </div>
 
@@ -112,21 +147,36 @@ const PropertyDetails = () => {
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-8">
           {/* Property Images */}
-          <Card className="glass-card overflow-hidden">
-            <img
-              src={propertyDetails.images[0]}
-              alt={property.propertyName}
-              className="w-full h-[400px] object-cover"
-            />
-          </Card>
+          {images.length > 0 && (
+            <Card className="glass-card overflow-hidden relative w-full h-auto flex items-center justify-center">
+              <img
+                src={images[currentIndex]}
+                alt={`Property Image ${currentIndex + 1}`}
+                className="w-full h-full object-cover rounded-lg transition duration-300"
+              />
+              <button
+                onClick={prevImage}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full text-white"
+              >
+                <ChevronLeft size={24} />
+              </button>
 
+              {/* Right Arrow */}
+              <button
+                onClick={nextImage}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 p-2 rounded-full text-white"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </Card>
+          )}
           {/* Property Description should add in smart contract*/}
           <Card className="glass-card">
             <CardHeader>
               <CardTitle>About the Property</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">{propertyDetails.description}</p>
+              <p className="text-gray-600">{propertyMetadata.description}</p>
             </CardContent>
           </Card>
 
