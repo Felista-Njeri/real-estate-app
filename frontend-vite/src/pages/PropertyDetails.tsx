@@ -14,24 +14,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { MapPin, ChevronLeft, ChevronRight  } from "lucide-react";
 import { fetchMetadataFromIPFS } from "@/utils/pinata"
-
-interface Property {
-  propertyId: number;
-  metadataCID: string
-  tokenPrice: bigint;
-  tokensSold: bigint;
-  totalDividends: bigint;
-  totalTokens: bigint;
-  owner: string;
-  isActive: boolean;
-}
-
-interface PropertyMetaData {
-  propertyName: string,
-  location: string,
-  description:string,
-  images: string
-}
+import { Property, PropertyMetaData } from "@/types/index";
 
 // Mock data
 const propertyDetails = {

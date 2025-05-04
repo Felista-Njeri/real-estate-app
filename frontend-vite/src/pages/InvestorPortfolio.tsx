@@ -25,6 +25,7 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import { DashboardLayout } from "@/reactcomponents/DashboardLayout";
 
 interface PortfolioItem {
   propertyId: number;
@@ -164,6 +165,7 @@ const InvestorPortfolio = () => {
   };
 
   return (
+    <DashboardLayout>
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
       <h1 className="text-4xl font-bold mb-8">Investor Portfolio</h1>
 
@@ -425,6 +427,7 @@ const InvestorPortfolio = () => {
         onClose={() => setShowClaimDividendsModal(false)}
       />)}
     </div>
+    </DashboardLayout>
   );
 };
 
