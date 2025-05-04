@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useReadContract } from 'wagmi'
-import { readContract } from '@wagmi/core'
+import { useReadContract } from 'wagmi';
+import { readContract } from '@wagmi/core';
 import { wagmiconfig } from "../../wagmiconfig";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
@@ -14,58 +14,73 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Search, MapPin } from "lucide-react";
-
-interface Property {
-  propertyId: number;
-  propertyName: string;
-  location: string;
-  images: string;
-  description: string;
-  totalTokens: bigint;
-  tokenPrice: bigint;
-  totalDividends: bigint;
-  owner: string;
-  isActive: boolean;
-}
-
+import { fetchMetadataFromIPFS } from "@/utils/pinata";
+import { Property, PropertyMetaData } from "@/types/index";
 
 const Marketplace = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [availableTokensMap, setAvailableTokensMap] = useState<{ [key: number]: number }>({});
-  
+  const [propertiesWithMetadata, setPropertiesWithMetadata] = useState<(Property & PropertyMetaData)[]>([]);
+
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useReadContract({
     address: CONTRACT_ADDRESS,
     abi: CONTRACT_ABI,
     functionName: "getAllProperties",
-  }); 
+  });
 
-  const properties: Property[] = (data as Property[]) || [];
+  useEffect(() => {
+    const fetchAllMetadata = async () => {
+      if (!data || !Array.isArray(data)) return;
 
-  const filteredProperties = properties.filter(
+      try {
+        const allProperties = data as Property[];
+
+        const enriched = await Promise.all(
+          allProperties.map(async (property) => {
+            try {
+              const metadata = await fetchMetadataFromIPFS(property.metadataCID);
+              return { ...property, ...metadata };
+            } catch (err) {
+              console.error(`Failed to fetch metadata for property ${property.propertyId}:`, err);
+              return null;
+            }
+          })
+        );
+
+        const filtered = enriched.filter((p): p is Property & PropertyMetaData => p !== null);
+        setPropertiesWithMetadata(filtered);
+      } catch (err) {
+        console.error("Error processing property metadata:", err);
+      }
+    };
+
+    fetchAllMetadata();
+  }, [data]);
+
+  const filteredProperties = propertiesWithMetadata.filter(
     (p) =>
       p.propertyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
 
   useEffect(() => {
     const fetchAvailableTokens = async () => {
-      if (!properties.length) return;
-  
+      if (!propertiesWithMetadata.length) return;
+
       const tokenMap: { [key: number]: number } = {};
-  
+
       await Promise.all(
-        properties.map(async (property) => {
+        propertiesWithMetadata.map(async (property) => {
           try {
-            const tokens = await readContract( wagmiconfig, {
+            const tokens = await readContract(wagmiconfig, {
               address: CONTRACT_ADDRESS,
               abi: CONTRACT_ABI,
               functionName: 'getAvailableTokens',
               args: [property.propertyId],
             });
-  
+
             tokenMap[property.propertyId] = Number(tokens);
           } catch (err) {
             console.error(`Error fetching tokens for property ${property.propertyId}`, err);
@@ -74,15 +89,18 @@ const Marketplace = () => {
       );
       setAvailableTokensMap(tokenMap);
     };
-  
+
     fetchAvailableTokens();
-  }, [properties]);
-  
+  }, [propertiesWithMetadata]);
 
-  if (isLoading) return <><div className="flex justify-center items-center h-screen gap-4"><p>Loading</p><span className="loading loading-spinner loading-lg"></span></div></>
+  if (isLoading) return (
+    <div className="flex justify-center items-center h-screen gap-4">
+      <p>Loading</p>
+      <span className="loading loading-spinner loading-lg"></span>
+    </div>
+  );
   if (isError) return <p>Error fetching properties.</p>;
-  if (!properties.length) return <p>No properties available.</p>;
-
+  if (!propertiesWithMetadata.length) return <p>No properties available.</p>;
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
@@ -102,19 +120,16 @@ const Marketplace = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredProperties.map((property: Property, index: number) => (
-          <Card
-            key={index}
-            className="glass-card overflow-hidden hover-transform"
-          >
+        {filteredProperties.map((property, index) => (
+          <Card key={index} className="glass-card overflow-hidden hover-transform">
             <div className="relative h-48">
               <img
-                src={property.images}
+                src={property.images.split(",")[0]} // Just first image for now
                 alt={property.propertyName}
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-              {Number(property.tokenPrice) / 1e18}  ETH/token
+                {Number(property.tokenPrice) / 1e18} ETH/token
               </div>
             </div>
 
@@ -136,14 +151,16 @@ const Marketplace = () => {
                   <div>
                     <p className="text-gray-500">Available Tokens</p>
                     <p className="font-medium">
-                        {availableTokensMap[property.propertyId] !== undefined
+                      {availableTokensMap[property.propertyId] !== undefined
                         ? availableTokensMap[property.propertyId]
                         : "Loading..."}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-500">Total Value</p>
-                    <p className="font-medium">{(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18)} ETH</p>
+                    <p className="font-medium">
+                      {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18).toFixed(2)} ETH
+                    </p>
                   </div>
                   <div>
                     <p className="text-gray-500">Dividends</p>
@@ -151,9 +168,10 @@ const Marketplace = () => {
                   </div>
                 </div>
 
-                <Button 
-                className="w-full bg-sage-600 hover:bg-sage-700"
-                onClick={() => navigate(`/marketplace/${property.propertyId}`)}>
+                <Button
+                  className="w-full bg-sage-600 hover:bg-sage-700"
+                  onClick={() => navigate(`/marketplace/${property.propertyId}`)}
+                >
                   View Details
                 </Button>
               </div>
