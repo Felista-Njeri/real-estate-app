@@ -106,15 +106,6 @@ const InvestorPortfolio = () => {
       fetchHoldingsData();
     }
   }, [properties, isLoading, address]);
-
-
-  // Ensure calculations only run when holdings exist
-  // const totalValue = holdings.reduce((acc, curr) => acc + curr.value, 0) || 0;
-  // const totalTokens = holdings.reduce((acc, curr) => acc + curr.tokens, 0) || 0;
-  // const averageROI =
-  //   holdings.length > 0
-  //     ? holdings.reduce((acc, curr) => acc + curr.roi, 0) / holdings.length
-  //     : 0;
      
   const handleSellClick = (property: PortfolioItem) => {
     setSelectedProperty(property); // Set the selected property
