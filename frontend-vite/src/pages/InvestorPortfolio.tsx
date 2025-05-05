@@ -12,19 +12,6 @@ import SellModal from "@/reactcomponents/SellModal";
 import DepositDividendsModal from "@/reactcomponents/DepositDividendsModal";
 import ClaimDividendsModal from "@/reactcomponents/ClaimDividendsModal";
 import StatCard from '@/reactcomponents/StatCard'
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
 import { DashboardLayout } from "@/reactcomponents/DashboardLayout";
 
 interface PortfolioItem {
@@ -56,26 +43,6 @@ const transactionHistory = [
     tokens: null,
     price: 250,
   },
-];
-
-// Mock data for portfolio value history
-const portfolioHistory = [
-  { date: "2023-10", value: 150000 },
-  { date: "2023-11", value: 155000 },
-  { date: "2023-12", value: 158000 },
-  { date: "2024-01", value: 162000 },
-  { date: "2024-02", value: 165000 },
-  { date: "2024-03", value: 170000 },
-];
-
-// Colors for pie chart
-const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
 ];
 
 const InvestorPortfolio = () => {
