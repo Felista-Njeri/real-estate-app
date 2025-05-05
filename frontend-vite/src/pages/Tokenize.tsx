@@ -130,7 +130,7 @@ const Tokenize = () => {
     }
 
     const totalTokensNumber = Number(totalTokens);
-    const tokenPriceNumber = Number(tokenPrice);
+    const tokenPriceNumber = (Number(tokenPrice)) / 130;
 
     if (
       isNaN(totalTokensNumber) ||
@@ -147,7 +147,7 @@ const Tokenize = () => {
     }
 
     const totalTokensBigInt = BigInt(totalTokensNumber);
-    const tokenPriceBigInt = BigInt(Math.floor(tokenPriceNumber * 1e18));
+    const tokenPriceBigInt = BigInt(Math.floor((tokenPriceNumber / 2000) * 1e18));
 
     if (!address) {
       toast({
@@ -301,7 +301,6 @@ const Tokenize = () => {
                 <Input
                   id="description"
                   name="description"
-                  className="h-20 py-0"
                   placeholder="Provide a detailed description of the property"
                 />
                 </div>
@@ -333,7 +332,7 @@ const Tokenize = () => {
                   {imageUrls.length > 0 && (
                       <div className="mt-2">
                       <p>Images Uploaded:</p>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-1">
                         {imageUrls.map((url, index) => (
                           <img
                            key={index}
@@ -358,13 +357,13 @@ const Tokenize = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tokenPrice">Price per Token (ETH)</Label>
+                    <Label htmlFor="tokenPrice">Price per Token (KES)</Label>
                     <Input
                       id="tokenPrice"
                       name="tokenPrice"
                       type="number"
-                      step="0.01"
-                      placeholder="0.1"
+                      step="1000"
+                      placeholder="5000"
                     />
                   </div>
                 </div>
@@ -417,7 +416,7 @@ const Tokenize = () => {
                 <strong>Total Tokens:</strong> {tokenizedProperty.totalTokens}
               </p>
               <p>
-                <strong>Token Price:</strong> {tokenizedProperty.tokenPrice} ETH
+                <strong>Token Price:</strong> {tokenizedProperty.tokenPrice} KES
               </p>
             </div>
             <DialogFooter>
