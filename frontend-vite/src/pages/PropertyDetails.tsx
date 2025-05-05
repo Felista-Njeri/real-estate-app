@@ -243,19 +243,19 @@ const PropertyDetails = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Price per Token</span>
                   <span className="font-medium">
-                    {(Number(property.tokenPrice)) / 1e18} ETH
+                    {((Number(property.tokenPrice)) / 1e18 * 2000 * 130).toLocaleString('en-KE')} KES
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Total Token Spply</span>
+                  <span className="text-gray-600">Total Token Supply</span>
                   <span className="font-medium">
-                    {property.totalTokens}
+                    {property.totalTokens.toLocaleString('en-KE')}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Available Tokens</span>
                   <span className="font-medium">
-                    {availableTokens}
+                    {availableTokens.toLocaleString('en-KE')}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
@@ -282,7 +282,7 @@ const PropertyDetails = () => {
                 />
                 <p className="text-sm text-gray-600">
                   {(Number(property.totalTokens)) - availableTokens} of{" "}
-                  {property.totalTokens} tokens sold
+                  {property.totalTokens.toLocaleString('en-KE')} tokens sold
                 </p>
               </div>
 

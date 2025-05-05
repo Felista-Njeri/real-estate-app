@@ -100,7 +100,13 @@ const Marketplace = () => {
     </div>
   );
   if (isError) return <p className="text-center mt-56">Error fetching properties.</p>
-  if (!propertiesWithMetadata.length) return <p className="text-center mt-56">No properties available.</p>
+  if (!propertiesWithMetadata) return (
+    <div className="flex justify-center items-center h-screen gap-4">
+      <p>Loading properties</p>
+      <span className="loading loading-spinner loading-lg"></span>
+    </div>
+  );
+  //if (!propertiesWithMetadata.length) return <p className="text-center mt-56">No properties available.</p>
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
@@ -146,13 +152,13 @@ const Marketplace = () => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Total Tokens</p>
-                    <p className="font-medium">{property.totalTokens.toString()}</p>
+                    <p className="font-medium">{property.totalTokens.toLocaleString('en-KE')}</p>
                   </div>
                   <div>
                     <p className="text-gray-500">Available Tokens</p>
                     <p className="font-medium">
                       {availableTokensMap[property.propertyId] !== undefined
-                        ? availableTokensMap[property.propertyId]
+                        ? availableTokensMap[property.propertyId].toLocaleString('en-KE')
                         : "Loading..."}
                     </p>
                   </div>
@@ -164,7 +170,7 @@ const Marketplace = () => {
                   </div>
                   <div>
                     <p className="text-gray-500">Dividends</p>
-                    <p className="font-medium">{Number(property.totalDividends) / 1e18 * 2000 * 130} KES</p>
+                    <p className="font-medium">{(Number(property.totalDividends) / 1e18 * 2000 * 130).toLocaleString('en-KE')} KES</p>
                   </div>
                 </div>
 
