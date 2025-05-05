@@ -30,7 +30,7 @@ const DepositDividendsModal = ({ propertyId, isOpen, onClose }: DepositDividends
     if (!amount || amount <= 0) {
       toast({
         title: "Invalid Amount",
-        description: "Please enter a valid amount of ETH to deposit.",
+        description: "Please enter a valid amount of KES to deposit.",
         variant: "destructive",
       });
       return;
@@ -39,7 +39,7 @@ const DepositDividendsModal = ({ propertyId, isOpen, onClose }: DepositDividends
     try {
       setLocalLoading(true);
 
-      const amountInWei = BigInt(amount * 1e18);
+      const amountInWei = BigInt((amount / (130 * 2000)) * 1e18 );
 
       await writeContractAsync({
         abi: CONTRACT_ABI,
@@ -51,7 +51,7 @@ const DepositDividendsModal = ({ propertyId, isOpen, onClose }: DepositDividends
 
       toast({
         title: "Success",
-        description: `You have successfully deposited ${amount} ETH for dividends.`,
+        description: `You have successfully deposited ${amount.toLocaleString('en-KE')} KES for dividends.`,
         className: "bg-green-500",
       });
 
@@ -93,19 +93,19 @@ const DepositDividendsModal = ({ propertyId, isOpen, onClose }: DepositDividends
         <DialogHeader>
           <DialogTitle>Deposit Dividends for this Property</DialogTitle>
           <DialogDescription>
-            Enter the amount of ETH you want to deposit for dividend distribution.
+            Enter the amount of KES you want to deposit for dividend distribution.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div>
             <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-              Amount (ETH)
+              Amount (KES)
             </label>
             <Input
               id="amount"
               type="number"
               min="0"
-              step="0.01"
+              step="1000"
               placeholder="Enter amount"
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}

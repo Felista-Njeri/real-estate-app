@@ -26,7 +26,7 @@ const Features = () => {
 
 
       return (
-        <div className="animate-fadeIn">      
+        <div className="animate-fadeIn bg-gradient-to-r from-sage-100 to-terra-100">      
     
           {/* Features Section */}
           <section className="py-24 ">

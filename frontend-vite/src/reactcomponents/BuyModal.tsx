@@ -32,7 +32,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
   const navigate = useNavigate();
 
   const totalCost = Number(tokenPrice) * amount / 1e18; // Convert to ETH
-
+  //To DO: allow buying through KES and the contract will handle it well/props
   const { writeContractAsync, isSuccess } = useWriteContract({});
 
   const { data: availableTokens } = useReadContract({
@@ -141,7 +141,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
                 <h3 className="font-semibold mb-2">Purchase Summary</h3>
                 <div className="flex justify-between text-sm">
                   <span>Available Tokens:</span>
-                  <span>{Number(availableTokens) || "0"} tokens</span>
+                  <span>{(Number(availableTokens)).toLocaleString('en-KE') || "0"} tokens</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Amount:</span>
@@ -149,12 +149,12 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
                 </div>
                 <div className="flex justify-between text-sm mt-1">
                   <span>Price per token:</span>
-                  <span>{Number(tokenPrice) / 1e18} ETH</span>
+                  <span>{(Number(tokenPrice) / 1e18 * 130 * 2000).toLocaleString('en-KE')} KES</span>
                 </div>
                 <div className="border-t border-sage-200 mt-2 pt-2">
                   <div className="flex justify-between font-semibold">
                     <span>Total:</span>
-                    <span>{amount ? (Number(tokenPrice) * amount) / 1e18 : "0"} ETH</span>
+                    <span>{amount ? ((Number(tokenPrice) * amount) / 1e18 * 130 * 2000).toLocaleString('en-KE') : "0"} KES</span>
                   </div>
                 </div>
               </div>
