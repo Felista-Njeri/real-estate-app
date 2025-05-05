@@ -99,8 +99,8 @@ const Marketplace = () => {
       <span className="loading loading-spinner loading-lg"></span>
     </div>
   );
-  if (isError) return <p>Error fetching properties.</p>;
-  if (!propertiesWithMetadata.length) return <p>No properties available.</p>;
+  if (isError) return <p className="text-center mt-56">Error fetching properties.</p>
+  if (!propertiesWithMetadata.length) return <p className="text-center mt-56">No properties available.</p>
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
@@ -129,7 +129,7 @@ const Marketplace = () => {
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-                {Number(property.tokenPrice) / 1e18} ETH/token
+                {(Number(property.tokenPrice) / 1e18) * 2000 * 130} KES/token
               </div>
             </div>
 
@@ -159,12 +159,12 @@ const Marketplace = () => {
                   <div>
                     <p className="text-gray-500">Total Value</p>
                     <p className="font-medium">
-                      {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18).toFixed(2)} ETH
+                      {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 2000 * 130 ).toLocaleString('en-KE')} KES
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-500">Dividends</p>
-                    <p className="font-medium">{Number(property.totalDividends) / 1e18} ETH</p>
+                    <p className="font-medium">{Number(property.totalDividends) / 1e18 * 2000 * 130} KES</p>
                   </div>
                 </div>
 
