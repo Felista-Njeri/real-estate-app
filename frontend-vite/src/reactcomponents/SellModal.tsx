@@ -143,12 +143,12 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
                 </div>
                 <div className="flex justify-between text-sm mt-1">
                   <span>Price per token:</span>
-                  <span>{Number(tokenPrice) / 1e18} ETH</span>
+                  <span>{(Number(tokenPrice) / 1e18 * 130 * 2000).toLocaleString('en-KE')} KES</span>
                 </div>
                 <div className="border-t border-sage-200 mt-2 pt-2">
                   <div className="flex justify-between font-semibold">
                     <span>Total:</span>
-                    <span>{totalValue} ETH</span> 
+                    <span>{(totalValue * 130 * 2000).toLocaleString()} KES</span> 
                   </div>
                 </div>
               </div>
