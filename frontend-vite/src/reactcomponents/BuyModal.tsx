@@ -31,8 +31,8 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const totalCost = Number(tokenPrice) * amount / 1e18; // Convert to ETH
-  //To DO: allow buying through KES and the contract will handle it well/props
+  const totalCostWEI = tokenPrice * BigInt(amount)
+
   const { writeContractAsync, isSuccess } = useWriteContract({});
 
   const { data: availableTokens } = useReadContract({
@@ -70,7 +70,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
         address: CONTRACT_ADDRESS,
         functionName: "purchaseTokens",
         args: [propertyId, amount],
-        value: BigInt(totalCost * 1e18), // Send ETH equivalent to contract
+        value: totalCostWEI
       });
       toast({
         title: "Success",
