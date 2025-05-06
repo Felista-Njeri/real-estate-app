@@ -135,7 +135,7 @@ const Marketplace = () => {
                 className="w-full h-full object-cover"
               />
               <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
-                {(Number(property.tokenPrice) / 1e18) * 2000 * 130} KES/token
+                {((Number(property.tokenPrice) / 1e18) * 2000 * 130).toLocaleString('en-KE')} KES/token
               </div>
             </div>
 
