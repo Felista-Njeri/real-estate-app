@@ -106,7 +106,7 @@ const Marketplace = () => {
       <span className="loading loading-spinner loading-lg"></span>
     </div>
   );
-  //if (!propertiesWithMetadata.length) return <p className="text-center mt-56">No properties available.</p>
+  if (!propertiesWithMetadata.length) return <p className="text-center mt-56">No properties available.</p>
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
