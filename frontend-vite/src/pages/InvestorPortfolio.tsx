@@ -13,17 +13,14 @@ import DepositDividendsModal from "@/reactcomponents/DepositDividendsModal";
 import ClaimDividendsModal from "@/reactcomponents/ClaimDividendsModal";
 import StatCard from '@/reactcomponents/StatCard'
 import { DashboardLayout } from "@/reactcomponents/DashboardLayout";
+import { fetchMetadataFromIPFS } from "@/utils/pinata";
+import { Property, PropertyMetaData } from "@/types/index";
 
 interface PortfolioItem {
   propertyId: number;
-  propertyName: string;
-  location: string;
   value: number;
   tokens: number;
-  tokenPrice: bigint;
-  totalDividends: bigint;
   roi: number;
-  imageUrl?: string;
 }
 
 const transactionHistory = [
@@ -49,28 +46,58 @@ const InvestorPortfolio = () => {
   const { address } = useAccount();
   const navigate = useNavigate();
 
-  const [holdings, setHoldings] = useState<PortfolioItem[]>([]);
+  const [holdings, setHoldings] = useState<PortfolioItem []>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<PortfolioItem | null>(null);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isDepositModalOpen, setDepositModalOpen] = useState(false);
   const [showClaimDividendsModal, setShowClaimDividendsModal] = useState(false);
+  const [propertiesWithMetadata, setPropertiesWithMetadata] = useState<(Property & PropertyMetaData & PortfolioItem)[]>([]);
 
-  const { data: properties , isLoading, isError } = useReadContract({
+  const { data , isLoading, isError } = useReadContract({
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
     functionName: "getInvestorHoldings",
     args: [address],
   });
   
+    useEffect(() => {
+      const fetchAllMetadata = async () => {
+        if (!data || !Array.isArray(data)) return;
+  
+        try {
+          const allProperties = data as Property[];
+  
+          const enriched = await Promise.all(
+            allProperties.map(async (property) => {
+              try {
+                const metadata = await fetchMetadataFromIPFS(property.metadataCID);
+                return { ...property, ...metadata };
+              } catch (err) {
+                console.error(`Failed to fetch metadata for property ${property.propertyId}:`, err);
+                return null;
+              }
+            })
+          );
+  
+          const filtered = enriched.filter((p): p is Property & PropertyMetaData & PortfolioItem => p !== null);
+          setPropertiesWithMetadata(filtered);
+        } catch (err) {
+          console.error("Error processing property metadata:", err);
+        }
+      };
+  
+      fetchAllMetadata();
+    }, [data]);
+  
   useEffect(() => {
-    if (!isLoading && Array.isArray(properties)) {
+    if (!isLoading && Array.isArray(data)) {
       const fetchHoldingsData = async () => {
         try {
           const holdingsData = await Promise.all(
-            properties.map(async (property: any) => {
+            data.map(async (property: Property) => {
               // Fetch all needed data in parallel
-              const balance = await readContract( wagmiconfig, {
+              const balance = await readContract(wagmiconfig, {
                   abi: CONTRACT_ABI,
                   address: CONTRACT_ADDRESS,
                   functionName: "getInvestorBalanceForEachProperty",
@@ -78,20 +105,16 @@ const InvestorPortfolio = () => {
                 })
   
               const tokensOwned = Number(balance || 0);
-              const tokenValue = tokensOwned * Number(property.tokenPrice) / 1e18;
+              const tokenValue = ((tokensOwned * Number(property.tokenPrice) / 1e18) * (130 * 2000));
 
               // Simple ROI calculation
-              const roi = property.tokenValue > 0 ? (Number(property.totalDividends)) / (Number(property.tokenPrice)) * 100 : 0;
+              const roi = (Number(tokensOwned) / Number(property.totalDividends) / 1e18 * 260000) * 100;
   
               return {
                 propertyId: Number(property.propertyId),
-                propertyName: property.propertyName,
-                location: property.location,
                 value: tokenValue,
                 tokens: tokensOwned,
                 roi: roi,
-                tokenPrice: BigInt(property.tokenPrice),     
-                totalDividends: BigInt(property.totalDividends),
               };
             })
           );
@@ -105,9 +128,9 @@ const InvestorPortfolio = () => {
   
       fetchHoldingsData();
     }
-  }, [properties, isLoading, address]);
+  }, [data, isLoading, address]);
      
-  const handleSellClick = (property: PortfolioItem) => {
+  const handleSellClick = (property: Property) => {
     setSelectedProperty(property); // Set the selected property
     setModalOpen(true); // Open the modal
   };
@@ -117,10 +140,17 @@ const InvestorPortfolio = () => {
   //   setDepositModalOpen(true); // Open the modal
   // };
 
-  const handleClaimDividends = (property: PortfolioItem) => {
+  const handleClaimDividends = (property: Property) => {
     setSelectedProperty(property); // Set the selected property
     setShowClaimDividendsModal(true); // Open the modal
   };
+
+  if (!propertiesWithMetadata ) return (
+    <div className="h-96 flex items-center justify-center">
+      <p>Loading metadata</p>
+      <span className="loading loading-spinner loading-md"></span>
+    </div>
+  )
 
   return (
     <DashboardLayout>
@@ -128,16 +158,16 @@ const InvestorPortfolio = () => {
       <h1 className="text-4xl font-bold mb-8">Investor Portfolio</h1>
 
       {isError && (
-  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-    Error loading portfolio data. Please try again.
-  </div>
-)}
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          Error loading portfolio data. Please try again.
+        </div>
+      )}
 
       {/* Key Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
           title="Total Value" 
-          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toString()}
+          value={holdings.reduce((sum, item) => sum + item.value, 0).toLocaleString('en-KE')}
           icon={<DollarSign className="h-8 w-8 text-sage-600" />} />
         <StatCard 
           title="Total Tokens" 
@@ -165,12 +195,15 @@ const InvestorPortfolio = () => {
   ) : isError ? (
     <p className="text-center text-red-500">Error fetching portfolio.</p>
   ) : holdings.length === 0 ? (
-    <p className="text-center text-gray-500">You don’t own any properties yet.</p>
+    <p className="text-center text-gray-500">You do not own any properties yet.</p>
   ) : (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {holdings.map((holding, index) => (
+      {propertiesWithMetadata.map((property) => {
+      const holding = holdings.find(h => h.propertyId == property.propertyId);
+      if (!holding) return <p>there is an error somewhere</p>;
+      return (
         <Card
-          key={index}
+          key={property.propertyId}
           className="glass-card hover:shadow-lg transition-shadow cursor-pointer"
         >
           <div className="flex flex-col md:flex-row overflow-hidden">
@@ -179,8 +212,8 @@ const InvestorPortfolio = () => {
                 Tokenized
               </div>
               <img
-                src={holding.imageUrl || "/apartment.jpg"} // fallback image if not available
-                alt={holding.propertyName}
+                src={property.images.split(",")[0] || "/apartment.jpg"}
+                alt={property.propertyName}
                 className="w-full h-48 rounded-md object-cover"
               />
             </div>
@@ -188,33 +221,37 @@ const InvestorPortfolio = () => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="text-xl font-bold leading-tight">
-                    {holding.propertyName}
+                    {property.propertyName}
                   </h3>
                   <div className="flex items-center text-gray-600 mb-2">
                     <MapPin size={16} className="mr-1" />
                     <span className="text-sm">
-                      {holding.location || "Unknown Location"}
+                      {property.location || "Unknown Location"}
                     </span>
                   </div>
                 </div>
                 <div className="text-xl font-bold text-emerald-600">
-                  ${holding.value.toString()}
+                  KES{holding.value.toLocaleString('en-KE')}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="grid grid-cols-4 gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-500">Tokens Owned</p>
-                  <p className="text-base font-medium">{holding.tokens}</p>
+                  <p className="text-base font-medium">{holding.tokens.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Token Supply</p>
+                  <p className="text-base font-medium">{property.totalTokens.toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Monthly Revenue</p>
-                  <p className="text-base font-medium">${holding.value}</p>
+                  <p className="text-base font-medium">KES{holding.value.toLocaleString('en-KE')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">ROI</p>
                   <p className={`text-base font-medium ${holding.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {holding.roi.toFixed(1)}%
+                  {holding.roi.toLocaleString()}%
                   </p>
                 </div>
               </div>
@@ -223,21 +260,21 @@ const InvestorPortfolio = () => {
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={() => navigate(`/marketplace/${holding.propertyId}`)}
+                onClick={() => navigate(`/marketplace/${property.propertyId}`)}
               >
                 View Details
               </Button>
               <Button 
                 size="sm" 
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
-                onClick={() => handleSellClick(holding)}
+                onClick={() => handleSellClick(property)}
               >
                 Sell Tokens
               </Button>
               <Button
                 size="sm"
                 className="bg-sage-600 text-white px-4 py-2 rounded-md hover:bg-sage-700"
-                onClick={() => handleClaimDividends(holding)}
+                onClick={() => handleClaimDividends(property)}
               > 
                 Claim Dividends
                 </Button>
@@ -245,11 +282,11 @@ const InvestorPortfolio = () => {
             </div>
           </div>
         </Card>
-      ))}
+      )
+      })}
     </div>
   )}
 </div>
-
 
       {/* Transaction History */}
       <Card className="glass-card">
@@ -277,7 +314,7 @@ const InvestorPortfolio = () => {
                     {transaction.property}
                   </TableCell>
                   <TableCell>{transaction.type}</TableCell>
-                  <TableCell>{transaction.tokens || "-"}</TableCell>
+                  <TableCell>{transaction.tokens || "100"}</TableCell>
                   <TableCell>${transaction.price.toLocaleString()}</TableCell>
                 </TableRow>
               ))}
