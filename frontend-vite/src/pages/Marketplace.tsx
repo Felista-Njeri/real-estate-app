@@ -106,7 +106,6 @@ const Marketplace = () => {
       <span className="loading loading-spinner loading-lg"></span>
     </div>
   );
-  if (!propertiesWithMetadata.length) return <p className="text-center mt-56">No properties available.</p>
 
   return (
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
@@ -125,7 +124,10 @@ const Marketplace = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {propertiesWithMetadata.length <= 0 ? (
+        <p className="text-center text-gray-500">Loading...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredProperties.map((property, index) => (
           <Card key={index} className="glass-card overflow-hidden hover-transform">
             <div className="relative h-48">
@@ -188,6 +190,8 @@ const Marketplace = () => {
           <p className="text-center text-gray-500 col-span-full">No matching properties found.</p>
         )}
       </div>
+      )}
+
     </div>
   );
 };
