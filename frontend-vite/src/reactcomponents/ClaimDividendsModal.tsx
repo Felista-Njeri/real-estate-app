@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Property } from '@/types/index'; 
 
 interface ClaimDividendsModalProps {
   propertyId: number;
@@ -33,27 +34,31 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
     functionName: "investorBalances",
-    args: [propertyId, address],
+    args: [BigInt(propertyId), address],
   });
 
   // Fetch total dividends for the property
-  const { data: totalDividends } = useReadContract({
+  const { data } = useReadContract({
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
     functionName: "getProperty",
-    args: [propertyId],
-  });
+    args: [BigInt(propertyId)],
+  }) as { data: Property };
+
+  const totalDividends = data?.totalDividends
+  const totalTokens = data?.totalTokens
 
   // Fetch claimed dividends by the investor
   const { data: claimedDividends } = useReadContract({
     abi: CONTRACT_ABI,
     address: CONTRACT_ADDRESS,
     functionName: "claimedDividends",
-    args: [propertyId, address],
+    args: [BigInt(propertyId), address],
   });
 
   // Calculate unclaimed dividends
-  const unclaimedDividends = Number(investorBalance) * Number(totalDividends) / Number(totalDividends) - Number(claimedDividends);
+  const dividendShare = (Number(investorBalance) * Number(totalDividends)) / Number(totalTokens);
+  const unclaimedDividends = dividendShare - Number(claimedDividends);
 
   const handleClaimDividends = async () => {
     if (!address) {
@@ -80,11 +85,11 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
         abi: CONTRACT_ABI,
         address: CONTRACT_ADDRESS,
         functionName: "claimDividends",
-        args: [propertyId],
+        args: [BigInt(propertyId)],
       });
       toast({
         title: "Success",
-        description: `You have successfully claimed ${unclaimedDividends} ETH in dividends!`,
+        description: `You have successfully claimed ${(unclaimedDividends / 1e18 * 260000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) } KES in dividends!`,
         className: "bg-green-500",
       });
     } catch (error: unknown) {
@@ -131,20 +136,20 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
             <h3 className="font-semibold mb-2">Summary</h3>
             <div className="flex justify-between text-sm">
               <span>Your Holdings:</span>
-              <span>{Number(investorBalance) || "0"} tokens</span>
+              <span>{(Number(investorBalance)).toLocaleString() || "0"} tokens</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Total Dividends:</span>
-              <span>{Number(totalDividends) / 1e18 || "0"} ETH</span>
+              <span>{(Number(totalDividends) / 1e18 * 260000 || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KES</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Claimed Dividends:</span>
-              <span>{Number(claimedDividends) / 1e18 || "0"} ETH</span>
+              <span>{(Number(claimedDividends) / 1e18 * 260000 || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KES</span>
             </div>
             <div className="border-t border-sage-200 mt-2 pt-2">
               <div className="flex justify-between font-semibold">
                 <span>Unclaimed Dividends:</span>
-                <span>{unclaimedDividends / 1e18 || "0"} ETH</span>
+                <span>{(unclaimedDividends / 1e18 * 260000 || "0").toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} KES</span>
               </div>
             </div>
           </div>
