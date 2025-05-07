@@ -68,7 +68,7 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
       });
       toast({
         title: "Success",
-        description: `You have succesfully sold ${amount} tokens`,
+        description: `You have succesfully sold ${amount.toLocaleString()} tokens`,
         className: "bg-green-500",
       });
     } catch (error: unknown) {
@@ -135,7 +135,7 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
                 <h3 className="font-semibold mb-2">Summary</h3>
                 <div className="flex justify-between text-sm">
                   <span>Your Holdings:</span>
-                  <span>{Number(investorBalance) || "0"} tokens</span>
+                  <span>{(Number(investorBalance)).toLocaleString() || "0"} tokens</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Amount:</span>

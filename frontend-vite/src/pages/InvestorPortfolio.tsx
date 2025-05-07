@@ -171,11 +171,11 @@ const InvestorPortfolio = () => {
           icon={<DollarSign className="h-8 w-8 text-sage-600" />} />
         <StatCard 
           title="Total Tokens" 
-          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toString()}
+          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toLocaleString()}
           icon={<Wallet className="h-8 w-8 text-sage-600" />} />
         <StatCard 
-          title="Average ROI" 
-          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toString()}
+          title="Total Tokens" 
+          value={holdings.reduce((sum, item) => sum + item.tokens, 0).toLocaleString()}
           icon={<TrendingUp className="h-8 w-8 text-sage-600" />} />
         <StatCard 
           title="Properties" 
@@ -245,15 +245,15 @@ const InvestorPortfolio = () => {
                   <p className="text-base font-medium">{property.totalTokens.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Monthly Revenue</p>
-                  <p className="text-base font-medium">KES{holding.value.toLocaleString('en-KE')}</p>
+                  <p className="text-sm text-gray-500">Total Dividends</p>
+                  <p className="text-base font-medium">KES{(Number(property.totalDividends) / 1e18 * 260000).toLocaleString('en-KE')}</p>
                 </div>
-                <div>
+                {/* <div>
                   <p className="text-sm text-gray-500">ROI</p>
                   <p className={`text-base font-medium ${holding.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {holding.roi.toLocaleString()}%
                   </p>
-                </div>
+                </div> */}
               </div>
 
             <div className="flex flex-wrap gap-2">
