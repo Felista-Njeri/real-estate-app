@@ -80,7 +80,6 @@ export const fetchMetadataFromIPFS = async (cid: string): Promise<any> => {
   if (!gateway) throw new Error("Missing VITE_PINATA_GATEWAY_URL");
 
   const url = `${gateway}/ipfs/${cid}`;
-  console.log("cid is", cid)
 
   const res = await fetch(url);
 

@@ -106,7 +106,7 @@ const PropertyOwnerPortfolio = () => {
       <span className="loading loading-spinner loading-md"></span>
     </div>
   )
-  if (propertiesWithMetadata.length <= 0) return <div className="h-96 flex items-center justify-center">You have no Tokenized properties</div>
+  //if (propertiesWithMetadata.length <= 0) return <div className="h-96 flex items-center justify-center">You have no Tokenized properties</div>
 
   const handleDepositDividendClick = (property: Property) => {
     setSelectedProperty(property); // Set the selected property
@@ -219,6 +219,7 @@ const PropertyOwnerPortfolio = () => {
                       <p className="text-sm text-gray-500">Token Sales</p>
                       <div className="flex items-center space-x-1">
                         <Progress
+                        //TO DO: Copy lofic from single property detail page
                           // value={(property.soldTokens / property.totalTokens) * 100}
                           className="w-full"
                         />
@@ -239,15 +240,15 @@ const PropertyOwnerPortfolio = () => {
                   <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
                     <div>
                       <span className="text-gray-500">Total Dividends:</span>
-                      <p className="font-medium">{((Number(property.totalDividends)) /1e18 * 130 * 2000).toLocaleString('en-KE')}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Investors:</span>
-                      <p className="font-medium">45</p>
+                      <p className="font-medium">{((Number(property.totalDividends)) /1e18 * 130 * 2000).toLocaleString('en-KE')} KES</p>
                     </div>
                     <div>
                       <span className="text-gray-500">Tokens:</span>
                       <p className="font-medium">{property.totalTokens.toLocaleString('en-KE')}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Investors:</span>
+                      <p className="font-medium">45</p>
                     </div>
                   </div>
                   
