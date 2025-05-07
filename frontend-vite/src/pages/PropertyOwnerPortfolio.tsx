@@ -106,7 +106,6 @@ const PropertyOwnerPortfolio = () => {
       <span className="loading loading-spinner loading-md"></span>
     </div>
   )
-  //if (propertiesWithMetadata.length <= 0) return <div className="h-96 flex items-center justify-center">You have no Tokenized properties</div>
 
   const handleDepositDividendClick = (property: Property) => {
     setSelectedProperty(property); // Set the selected property
@@ -186,7 +185,10 @@ const PropertyOwnerPortfolio = () => {
       {/* Properties Cards */}
       <div className="mb-8 glass-card p-4">
         <h2 className="text-2xl font-semibold mb-4">Your Properties</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {propertiesWithMetadata.length === 0 ? (
+          <p className="text-center text-gray-500">You have no Tokenized properties</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {propertiesWithMetadata.map((property) => (
             <Card key={property.propertyId}>
               <div className="flex flex-col md:flex-row overflow-hidden">
@@ -269,6 +271,8 @@ const PropertyOwnerPortfolio = () => {
             </Card>
           ))}
         </div>
+        )}
+
       </div>
 
       {/* Dividend Distribution History */}
