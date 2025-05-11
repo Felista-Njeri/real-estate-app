@@ -35,7 +35,9 @@ const Tokenize = () => {
 
   const { toast } = useToast(); 
   const navigate = useNavigate();
-  
+
+  const [tokenPriceCalc, setTokenPriceCalc] = useState(0)
+  const [totalTokensCalc, setTotalTokensCalc] = useState(0)
   const [newPropertyId, setNewPropertyId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [transactionHash, setTransactionHash] = useState<`0x${string}` | undefined>(undefined);
@@ -353,6 +355,7 @@ const Tokenize = () => {
                       name="totalTokens"
                       type="number"
                       placeholder="Number of tokens"
+                       onChange={(e) => setTotalTokensCalc(Number(e.target.value))}
                     />
                   </div>
 
@@ -364,9 +367,14 @@ const Tokenize = () => {
                       type="number"
                       step="1000"
                       placeholder="5000"
+                      onChange={(e) => setTokenPriceCalc(Number(e.target.value))}
                     />
                   </div>
                 </div>
+
+                <div>
+                  <span className="font-semibold">Property Value: {(totalTokensCalc * tokenPriceCalc).toLocaleString()} KES</span>
+                </div>    
 
                 <Button
                   type="submit"

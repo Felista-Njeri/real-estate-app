@@ -5,7 +5,7 @@ import { readContract } from '@wagmi/core';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Wallet, TrendingUp, Building2, DollarSign, MapPin } from "lucide-react";
+import { Wallet, TrendingUp, Building2, Coins, MapPin } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import SellModal from "@/reactcomponents/SellModal";
@@ -168,7 +168,7 @@ const InvestorPortfolio = () => {
         <StatCard 
           title="Total Value" 
           value={holdings.reduce((sum, item) => sum + item.value, 0).toLocaleString('en-KE')}
-          icon={<DollarSign className="h-8 w-8 text-sage-600" />} />
+          icon={<Coins className="h-8 w-8 text-sage-600" />} />
         <StatCard 
           title="Total Tokens" 
           value={holdings.reduce((sum, item) => sum + item.tokens, 0).toLocaleString()}
@@ -269,7 +269,7 @@ const InvestorPortfolio = () => {
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
                 onClick={() => handleSellClick(property)}
               >
-                Sell Tokens
+                Cash Out
               </Button>
               <Button
                 size="sm"

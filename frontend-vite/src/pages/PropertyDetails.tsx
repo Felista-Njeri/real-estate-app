@@ -207,7 +207,7 @@ const PropertyDetails = () => {
                 <TableBody>
                   <TableRow>
                     <TableCell className="font-medium">Property Value</TableCell>
-                    <TableCell>${propertyDetails.financials.propertyValue}</TableCell>
+                    <TableCell>KES {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000).toLocaleString()}</TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Rental Yield</TableCell>
@@ -222,7 +222,7 @@ const PropertyDetails = () => {
                   <TableRow>
                     <TableCell className="font-medium">Monthly Revenue</TableCell>
                     <TableCell>
-                      ${propertyDetails.financials.monthlyRevenue}
+                      KES {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000 /12).toLocaleString()}
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -259,13 +259,13 @@ const PropertyDetails = () => {
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Total Investors</span>
+                  <span className="text-gray-600">Property Value</span>
                   <span className="font-medium">
-                    {propertyDetails.totalInvestors}
+                    {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000).toLocaleString()} KES
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Annual Return</span>
+                  <span className="text-gray-600">Anticipated Annual Return</span>
                   <span className="font-medium text-sage-600">
                     {propertyDetails.annualReturn}%
                   </span>

@@ -109,8 +109,8 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
       <DialogHeader>
-              <DialogTitle>Sell Tokens</DialogTitle>
-              <DialogDescription>Please enter the amount of tokens you want to sell</DialogDescription>
+              <DialogTitle>Cash Out</DialogTitle>
+              <DialogDescription>Please enter the amount of tokens you want to cash out</DialogDescription>
       </DialogHeader>
       <div className="space-y-6">
               <div>
@@ -118,7 +118,7 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
                   htmlFor="amount"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Token Amount
+                  Number of Tokens
                 </label>
                 <Input
                   id="amount"
@@ -168,7 +168,7 @@ const SellModal = ({ propertyId, tokenPrice, isOpen, onClose }: SellModalProps) 
           <span className="loading loading-spinner loading-sm"></span>
         </>
       ) : (
-        "Sell"
+        "Cash Out"
       )}
     </Button>
   ) : (

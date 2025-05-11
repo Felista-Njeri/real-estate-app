@@ -124,7 +124,7 @@ const BuyModal = ({ propertyId, tokenPrice, isOpen, onClose }: BuyModalProps) =>
                   htmlFor="amount"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Token Amount
+                  Number of Tokens
                 </label>
                 <Input
                   id="amount"
