@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract RealEstateTokenization is ERC20, Ownable {
     struct Property{
         uint256 propertyId;
+        string propertyName;
         string metadataCID;
         uint256 totalTokens;
         uint256 tokensSold;
@@ -24,19 +25,19 @@ contract RealEstateTokenization is ERC20, Ownable {
     //Counter to generate unique property IDs
     uint256 public nextPropertyId;
     
-    event PropertyTokenized( uint256 propertyId, uint256 totalTokens, uint256 tokenPrice);
-    event TokensPurchased( uint256 propertyId, address investor, uint256 amount);
-    event DividendsDistributed(uint256 propertyId, uint256 totalDividends);
-    event DividendsClaimed(uint256 propertyId, address investor, uint256 amount);
+    event PropertyTokenized( uint256 propertyId, string propertyName, uint256 totalTokens, uint256 tokenPrice);
+    event TokensPurchased( uint256 propertyId, string propertyName, uint256 tokenPrice, address investor, uint256 amount);
+    event DividendsDistributed(uint256 propertyId, string propertyName, uint256 totalDividends);
+    event DividendsClaimed(uint256 propertyId, string propertyName, address investor, uint256 amount);
     event PropertyDeactivated(uint256 propertyId);
     event FundsWithdrawn(uint256 propertyId, address owner, uint256 amount);
-    event TokensSold(uint256 propertyId, address seller, uint256 amount, uint256 totalValue);
+    event TokensSold(uint256 propertyId, string propertyName, address seller, uint256 amount, uint256 totalValue);
 
     //Constructor to initialize the ERC20 token
     constructor() ERC20("RealEstateToken", "RET") Ownable(msg.sender) {}
 
     //Function to tokenize a new property
-    function tokenizeProperty( string memory _metadataCID, uint256 _totalTokens, uint256 _tokenPrice) external {
+    function tokenizeProperty( string memory _metadataCID, string memory _propertyName, uint256 _totalTokens, uint256 _tokenPrice) external {
         require(_totalTokens > 0, "Total tokens must be greater than 0");
         require(_tokenPrice > 0, "Token price must be greater than 0");
 
@@ -46,6 +47,7 @@ contract RealEstateTokenization is ERC20, Ownable {
         //Create a new Property Struct and store it in the mapping
         properties[propertyId] = Property({
             propertyId: propertyId,
+            propertyName: _propertyName,
             metadataCID: _metadataCID,
             totalTokens: _totalTokens,
             tokensSold: 0,
@@ -59,7 +61,7 @@ contract RealEstateTokenization is ERC20, Ownable {
 
         _mint(address(this), _totalTokens);  //Mint the total tokens to the contract itself
 
-        emit PropertyTokenized(propertyId, _totalTokens, _tokenPrice);
+        emit PropertyTokenized(propertyId, _propertyName, _totalTokens, _tokenPrice);
     }
 
     function getLatestPropertyId() external view returns (uint256) {
@@ -93,6 +95,8 @@ contract RealEstateTokenization is ERC20, Ownable {
     //Function for investors to purchase tokens
     function purchaseTokens( uint256 _propertyId, uint256 _amountOfTokens) external payable {
         Property storage property = properties[_propertyId];
+        uint256 _tokenPrice = property.tokenPrice;
+        string memory _propertyName = property.propertyName;
 
         require(property.isActive, "Property is not active for investment");
         require(_amountOfTokens > 0, "Amount of tokens must be greater than 0");
@@ -107,7 +111,7 @@ contract RealEstateTokenization is ERC20, Ownable {
         investorBalances[_propertyId][msg.sender] += _amountOfTokens;
         property.tokensSold += _amountOfTokens;
 
-        emit TokensPurchased(_propertyId, msg.sender, _amountOfTokens);
+        emit TokensPurchased(_propertyId, _propertyName, _tokenPrice, msg.sender, _amountOfTokens);
     }
 
     //Function to get properties an investor holds
@@ -144,6 +148,7 @@ contract RealEstateTokenization is ERC20, Ownable {
     //Function to distribute dividends (called by the property owner)
     function distributeDividends(uint256 _propertyId) external payable onlyOwner{
         Property storage property = properties[_propertyId];
+        string memory _propertyName = property.propertyName;
 
         require(property.isActive, "Property is not active");
         require(msg.value > 0, "Dividends must be greater than 0");
@@ -151,12 +156,13 @@ contract RealEstateTokenization is ERC20, Ownable {
         //Add the dividends to the property's total dividends
         property.totalDividends += msg.value;
 
-        emit DividendsDistributed(_propertyId, msg.value);
+        emit DividendsDistributed(_propertyId, _propertyName, msg.value);
     }
 
     //Function for investors to claim dividends
     function claimDividends(uint256 _propertyId) external {
         Property storage property = properties[_propertyId];
+        string memory _propertyName = property.propertyName;
 
         require(property.isActive, "Property is not active");
 
@@ -178,11 +184,12 @@ contract RealEstateTokenization is ERC20, Ownable {
         //Transfer the dividends to the investor
         payable(msg.sender).transfer(unclaimedDividends);
 
-        emit DividendsClaimed(_propertyId, msg.sender, unclaimedDividends);
+        emit DividendsClaimed(_propertyId, _propertyName, msg.sender, unclaimedDividends);
     }
 
     function sellTokens(uint256 _propertyId, uint256 _amount) external {
         Property storage property = properties[_propertyId];
+        string memory _propertyName = property.propertyName;
 
         require(property.isActive, "Property is not active for trading");
         require(_amount > 0, "Amount must be greater than 0");
@@ -207,7 +214,7 @@ contract RealEstateTokenization is ERC20, Ownable {
         property.tokensSold -= _amount;
 
          // Emit an event to log the token sale
-        emit TokensSold(_propertyId, msg.sender, _amount, totalValue);
+        emit TokensSold(_propertyId, _propertyName, msg.sender, _amount, totalValue);
     }
     
     // Function to allow the contract to receive ETH
