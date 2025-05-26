@@ -491,6 +491,7 @@ const InvestorPortfolio = () => {
                 <TableHead>Property Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Amount (KES)</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -504,6 +505,11 @@ const InvestorPortfolio = () => {
                   </TableCell>
                   <TableCell>{transaction.type}</TableCell>
                   <TableCell>{(transaction.totalValueClaimed).toLocaleString('en-KE')} </TableCell>
+                  <TableCell>
+                    <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                      Claimed
+                    </span>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
