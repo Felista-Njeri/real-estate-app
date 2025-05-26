@@ -43,6 +43,14 @@ type SellTransaction = {
   totalValueSold: number;
 };
 
+type ClaimDividendTransaction = {
+  id: string;
+  type: string;
+  date: Date;
+  property: string;
+  totalValueClaimed: number;
+};
+
 const InvestorPortfolio = () => {
   const { address } = useAccount();
   const navigate = useNavigate();
@@ -50,6 +58,7 @@ const InvestorPortfolio = () => {
   const [holdings, setHoldings] = useState<PortfolioItem []>([]);
   const [transactionHistory, setTransactionHistory] = useState<Transaction[]>([]);
   const [sellHistory, setSellHistory] = useState<SellTransaction[]>([]);
+  const [claimDividendHistory, setClaimDividendHistory] = useState<ClaimDividendTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -132,6 +141,38 @@ const InvestorPortfolio = () => {
         }));
 
         setSellHistory(transactions);
+
+      } catch(error){
+        console.error('Error fetching transaction history:', error);
+      }
+    }
+    fetchLogs();
+  }, [])
+
+      useEffect(() => {
+    async function fetchLogs(){
+      const publicClient = getPublicClient(wagmiconfig)
+      try{
+        const logs = await publicClient.getLogs({  
+          address: CONTRACT_ADDRESS,
+          events: parseAbi([
+            'event DividendsClaimed(uint256 propertyId, string propertyName, address investor, uint256 amount)'
+          ]),
+          fromBlock: 0n,
+          toBlock: 'latest',
+          strict: true,
+        })
+        console.log("Logs", logs)
+          
+        const transactions: ClaimDividendTransaction[] = logs.map((log) => ({
+          id: log.transactionHash,
+          type: log.eventName,
+          date: new Date(),
+          property: log.args.propertyName,
+          totalValueClaimed: Number(log.args.amount) / 1e18 * 260000
+        }));
+
+        setClaimDividendHistory(transactions);
 
       } catch(error){
         console.error('Error fetching transaction history:', error);
@@ -403,7 +444,7 @@ const InvestorPortfolio = () => {
       </Card>
 
       {/* Transaction History */}
-      <Card className="glass-card">
+      <Card className="glass-card mb-6">
         <CardHeader>
           <CardTitle>Sell History</CardTitle>
         </CardHeader>
@@ -430,6 +471,39 @@ const InvestorPortfolio = () => {
                   <TableCell>{transaction.type}</TableCell>
                   <TableCell>{transaction.tokens || "100"}</TableCell>
                   <TableCell>{(transaction.totalValueSold).toLocaleString('en-KE')} </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Transaction History */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>Claim Dividends History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Property Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Amount (KES)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {claimDividendHistory.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>
+                    {new Date(transaction.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {transaction.property}
+                  </TableCell>
+                  <TableCell>{transaction.type}</TableCell>
+                  <TableCell>{(transaction.totalValueClaimed).toLocaleString('en-KE')} </TableCell>
                 </TableRow>
               ))}
             </TableBody>
