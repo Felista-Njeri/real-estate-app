@@ -25,34 +25,27 @@ import { DashboardLayout } from "@/reactcomponents/DashboardLayout";
 import { fetchMetadataFromIPFS } from "@/utils/pinata";
 import { Property, PropertyMetaData } from "@/types/index";
 import { Link } from "react-router";
+import { parseAbi } from 'viem';
+import { getPublicClient } from '@wagmi/core';
+import { wagmiconfig }  from "../../wagmiconfig";
 
-const dividendHistory = [
-  {
-    id: 1,
-    property: "Luxury Apartment Complex",
-    date: "2024-03-15",
-    amount: 0.012 * 2000* 130,
-    recipients: 42,
-    status: "Distributed",
-  },
-  {
-    id: 2,
-    property: "Commercial Office Space",
-    date: "2024-03-10",
-    amount: 0.018 * 2000* 130,
-    recipients: 85,
-    status: "Distributed",
-  },
-  {
-    id: 3,
-    property: "Retail Shopping Center",
-    date: "2024-02-28",
-    amount: 0.014 * 2000* 130,
-    recipients: 64,
-    status: "Distributed",
-  },
-];
+type Transaction = {
+  id: string;
+  type: string;
+  date: Date;
+  property: string;
+  tokens: number;
+  price: number;
+};
 
+type Dividend = {
+  id: string;
+  type: string;
+  date: Date;
+  property: string;
+  status: "Distributed";
+  totalDividends: number;
+};
 
 const PropertyOwnerPortfolio = () => {
   const { address } = useAccount();
@@ -60,6 +53,8 @@ const PropertyOwnerPortfolio = () => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isDepositModalOpen, setDepositModalOpen] = useState(false);
   const [propertiesWithMetadata, setPropertiesWithMetadata] = useState<(Property & PropertyMetaData)[]>([]);
+  const [transactionHistory, setTransactionHistory] = useState<Transaction[]>([]);
+  const [dividendHistory, setDividendHistory] = useState<Dividend[]>([]);
 
   const { data, isLoading, isError, isFetching } = useReadContract({
     address: CONTRACT_ADDRESS,
@@ -68,6 +63,71 @@ const PropertyOwnerPortfolio = () => {
     args: [address],
   })
   //const properties: Property[] = (data as Property[]) || [];
+    useEffect(() => {
+      async function fetchLogs(){
+        const publicClient = getPublicClient(wagmiconfig)
+        try{
+          const logs = await publicClient.getLogs({  
+            address: CONTRACT_ADDRESS,
+            events: parseAbi([
+              'event PropertyTokenized( uint256 propertyId, string propertyName, uint256 totalTokens, uint256 tokenPrice)',
+            ]),
+            fromBlock: 0n,
+            toBlock: 'latest',
+            strict: true,
+          })
+          console.log("Logs", logs)
+            
+          const transactions: Transaction[] = logs.map((log) => ({
+            id: log.transactionHash,
+            type: log.eventName,
+            date: new Date(),
+            property: log.args.propertyName,
+            tokens: Number(log.args.totalTokens),
+            price: Number(log.args.tokenPrice) / 1e18 * 260000,
+          }));
+  
+          setTransactionHistory(transactions);
+  
+        } catch(error){
+          console.error('Error fetching transaction history:', error);
+        }
+      }
+      fetchLogs();
+    }, [])
+
+       useEffect(() => {
+      async function fetchLogs(){
+        const publicClient = getPublicClient(wagmiconfig)
+        try{
+          const logs = await publicClient.getLogs({  
+            address: CONTRACT_ADDRESS,
+            events: parseAbi([
+              'event DividendsDistributed(uint256 propertyId, string propertyName, uint256 totalDividends)'
+            ]),
+            fromBlock: 0n,
+            toBlock: 'latest',
+            strict: true,
+          })
+          console.log("Logs", logs)
+            
+          const transactions: Dividend[] = logs.map((log) => ({
+            id: log.transactionHash,
+            type: log.eventName,
+            date: new Date(),
+            property: log.args.propertyName,
+            status: "Distributed",
+            totalDividends: Number(log.args.totalDividends) / 1e18 * 260000
+          }));
+  
+          setDividendHistory(transactions);
+  
+        } catch(error){
+          console.error('Error fetching transaction history:', error);
+        }
+      }
+      fetchLogs();
+    }, [])
 
     useEffect(() => {
       const fetchAllMetadata = async () => {
@@ -275,6 +335,41 @@ const PropertyOwnerPortfolio = () => {
 
       </div>
 
+            {/* Transaction History */}
+            <Card className="glass-card mb-4">
+              <CardHeader>
+                <CardTitle>Transaction History</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Property Name</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Tokens</TableHead>
+                      <TableHead>Property Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactionHistory.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>
+                          {new Date(transaction.date).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {transaction.property}
+                        </TableCell>
+                        <TableCell>{transaction.type}</TableCell>
+                        <TableCell>{transaction.tokens.toLocaleString()}</TableCell>
+                        <TableCell>{(transaction.tokens * transaction.price).toLocaleString('en-KE')} </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
       {/* Dividend Distribution History */}
       <Card className="glass-card">
         <CardHeader>
@@ -285,9 +380,8 @@ const PropertyOwnerPortfolio = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Property</TableHead>
-                <TableHead>Amount (KES)</TableHead>
-                <TableHead>Recipients</TableHead>
+                <TableHead>Property Name</TableHead>
+                <TableHead>Dividend Amount (KES)</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
@@ -300,8 +394,7 @@ const PropertyOwnerPortfolio = () => {
                   <TableCell className="font-medium">
                     {dividend.property}
                   </TableCell>
-                  <TableCell>{dividend.amount.toLocaleString('en-KE')}</TableCell>
-                  <TableCell>{dividend.recipients}</TableCell>
+                  <TableCell>{dividend.totalDividends.toLocaleString('en-KE')}</TableCell>
                   <TableCell>
                     <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                       {dividend.status}
