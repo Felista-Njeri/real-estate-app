@@ -187,6 +187,7 @@ const Tokenize = () => {
         functionName: "tokenizeProperty",
         args: [
           metadatacid,
+          propertyName,
           totalTokensBigInt,
           tokenPriceBigInt,
         ],
