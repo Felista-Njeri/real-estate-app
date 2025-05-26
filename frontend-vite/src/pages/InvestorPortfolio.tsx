@@ -15,6 +15,8 @@ import StatCard from '@/reactcomponents/StatCard'
 import { DashboardLayout } from "@/reactcomponents/DashboardLayout";
 import { fetchMetadataFromIPFS } from "@/utils/pinata";
 import { Property, PropertyMetaData } from "@/types/index";
+import { parseAbi } from 'viem';
+import { getPublicClient } from '@wagmi/core';
 
 interface PortfolioItem {
   propertyId: number;
@@ -23,30 +25,31 @@ interface PortfolioItem {
   roi: number;
 }
 
-const transactionHistory = [
-  {
-    id: 1,
-    date: "2024-03-15",
-    property: "Luxury Apartment Complex",
-    type: "Purchase",
-    tokens: 50,
-    price: 5000,
-  },
-  {
-    id: 2,
-    date: "2024-03-10",
-    property: "Commercial Office Space",
-    type: "Dividend",
-    tokens: null,
-    price: 250,
-  },
-];
+type Transaction = {
+  id: string;
+  type: string;
+  date: Date;
+  property: string;
+  tokens: number;
+  price: number;
+};
+
+type SellTransaction = {
+  id: string;
+  type: string;
+  date: Date;
+  property: string;
+  tokens: number;
+  totalValueSold: number;
+};
 
 const InvestorPortfolio = () => {
   const { address } = useAccount();
   const navigate = useNavigate();
 
   const [holdings, setHoldings] = useState<PortfolioItem []>([]);
+  const [transactionHistory, setTransactionHistory] = useState<Transaction[]>([]);
+  const [sellHistory, setSellHistory] = useState<SellTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
@@ -60,7 +63,83 @@ const InvestorPortfolio = () => {
     functionName: "getInvestorHoldings",
     args: [address],
   });
+
+//   const unwatch = watchContractEvent(wagmiconfig, {
+//   address: CONTRACT_ADDRESS,
+//   abi: CONTRACT_ABI,
+//   eventName: 'TokensPurchased',
+//   onLogs(logs) {
+//     console.log('New logs!', logs)
+//   },
+// })
+// //unwatch()
   
+  useEffect(() => {
+    async function fetchLogs(){
+      const publicClient = getPublicClient(wagmiconfig)
+      try{
+        const logs = await publicClient.getLogs({  
+          address: CONTRACT_ADDRESS,
+          events: parseAbi([
+            'event TokensPurchased( uint256 propertyId, string propertyName, uint256 tokenPrice, address investor, uint256 amount)',
+          ]),
+          fromBlock: 0n,
+          toBlock: 'latest',
+          strict: true,
+        })
+        console.log("Logs", logs)
+          
+        const transactions: Transaction[] = logs.map((log) => ({
+          id: log.transactionHash,
+          type: log.eventName,
+          date: new Date(),
+          property: log.args.propertyName,
+          tokens: Number(log.args.amount),
+          price: Number(log.args.tokenPrice) / 1e18 * 260000
+        }));
+
+        setTransactionHistory(transactions);
+
+      } catch(error){
+        console.error('Error fetching transaction history:', error);
+      }
+    }
+    fetchLogs();
+  }, [])
+
+    useEffect(() => {
+    async function fetchLogs(){
+      const publicClient = getPublicClient(wagmiconfig)
+      try{
+        const logs = await publicClient.getLogs({  
+          address: CONTRACT_ADDRESS,
+          events: parseAbi([
+            'event TokensSold(uint256 propertyId, string propertyName, address seller, uint256 amount, uint256 totalValue)'
+          ]),
+          fromBlock: 0n,
+          toBlock: 'latest',
+          strict: true,
+        })
+        console.log("Logs", logs)
+          
+        const transactions: SellTransaction[] = logs.map((log) => ({
+          id: log.transactionHash,
+          type: log.eventName,
+          date: new Date(),
+          property: log.args.propertyName,
+          tokens: Number(log.args.amount),
+          totalValueSold: Number(log.args.totalValue) / 1e18 * 260000
+        }));
+
+        setSellHistory(transactions);
+
+      } catch(error){
+        console.error('Error fetching transaction history:', error);
+      }
+    }
+    fetchLogs();
+  }, [])
+
     useEffect(() => {
       const fetchAllMetadata = async () => {
         if (!data || !Array.isArray(data)) return;
@@ -166,7 +245,7 @@ const InvestorPortfolio = () => {
       {/* Key Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
-          title="Total Value" 
+          title="Total Value (KES)" 
           value={holdings.reduce((sum, item) => sum + item.value, 0).toLocaleString('en-KE')}
           icon={<Coins className="h-8 w-8 text-sage-600" />} />
         <StatCard 
@@ -231,7 +310,7 @@ const InvestorPortfolio = () => {
                   </div>
                 </div>
                 <div className="text-xl font-bold text-emerald-600">
-                  KES{holding.value.toLocaleString('en-KE')}
+                  KES {holding.value.toLocaleString('en-KE')}
                 </div>
               </div>
 
@@ -289,19 +368,19 @@ const InvestorPortfolio = () => {
 </div>
 
       {/* Transaction History */}
-      <Card className="glass-card">
+      <Card className="glass-card mb-6">
         <CardHeader>
-          <CardTitle>Transaction History</CardTitle>
+          <CardTitle>Purchase History</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Property</TableHead>
+                <TableHead>Property Name</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Tokens</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Amount (KES)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -315,7 +394,42 @@ const InvestorPortfolio = () => {
                   </TableCell>
                   <TableCell>{transaction.type}</TableCell>
                   <TableCell>{transaction.tokens || "100"}</TableCell>
-                  <TableCell>${transaction.price.toLocaleString()}</TableCell>
+                  <TableCell>{(transaction.tokens * transaction.price).toLocaleString('en-KE')} </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Transaction History */}
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>Sell History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Property Name</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Tokens</TableHead>
+                <TableHead>Amount (KES)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sellHistory.map((transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>
+                    {new Date(transaction.date).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {transaction.property}
+                  </TableCell>
+                  <TableCell>{transaction.type}</TableCell>
+                  <TableCell>{transaction.tokens || "100"}</TableCell>
+                  <TableCell>{(transaction.totalValueSold).toLocaleString('en-KE')} </TableCell>
                 </TableRow>
               ))}
             </TableBody>
