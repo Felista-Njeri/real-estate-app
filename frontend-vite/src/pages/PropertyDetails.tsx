@@ -210,19 +210,19 @@ const PropertyDetails = () => {
                     <TableCell>KES {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000).toLocaleString()}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium">Rental Yield</TableCell>
-                    <TableCell>{propertyDetails.financials.rentalYield}</TableCell>
+                    <TableCell className="font-medium">Dividend Payout</TableCell>
+                    <TableCell>{property.dividendPayout}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium">Occupancy Rate</TableCell>
+                    <TableCell className="font-medium">Expected Returns</TableCell>
                     <TableCell>
-                      {propertyDetails.financials.occupancyRate}
+                      {property.expectedReturn}%
                     </TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell className="font-medium">Monthly Revenue</TableCell>
                     <TableCell>
-                      KES {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000 /12).toLocaleString()}
+                      KES {(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000 /12).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </TableCell>
                   </TableRow>
                 </TableBody>
@@ -267,7 +267,13 @@ const PropertyDetails = () => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Anticipated Annual Return</span>
                   <span className="font-medium text-sage-600">
-                    {propertyDetails.annualReturn}%
+                    {property.expectedReturn}%
+                  </span>
+                </div>
+                  <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Dividend payouts</span>
+                  <span className="font-medium text-sage-600">
+                    {property.dividendPayout}
                   </span>
                 </div>
               </div>
