@@ -7,6 +7,8 @@ export interface Property {
     totalTokens: bigint;
     owner: string;
     isActive: boolean;
+    dividendPayout?: string;
+    expectedReturn?: string;
 }
   
 export interface PropertyMetaData {

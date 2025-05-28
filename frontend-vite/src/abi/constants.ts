@@ -567,6 +567,16 @@ export const CONTRACT_ABI = [
               "type": "uint256"
             },
             {
+              "internalType": "string",
+              "name": "dividendPayout",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "expectedReturn",
+              "type": "string"
+            },
+            {
               "internalType": "address",
               "name": "owner",
               "type": "address"
@@ -676,6 +686,16 @@ export const CONTRACT_ABI = [
               "type": "uint256"
             },
             {
+              "internalType": "string",
+              "name": "dividendPayout",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "expectedReturn",
+              "type": "string"
+            },
+            {
               "internalType": "address",
               "name": "owner",
               "type": "address"
@@ -755,6 +775,16 @@ export const CONTRACT_ABI = [
               "type": "uint256"
             },
             {
+              "internalType": "string",
+              "name": "dividendPayout",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "expectedReturn",
+              "type": "string"
+            },
+            {
               "internalType": "address",
               "name": "owner",
               "type": "address"
@@ -819,6 +849,16 @@ export const CONTRACT_ABI = [
               "internalType": "uint256",
               "name": "totalDividends",
               "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "dividendPayout",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "expectedReturn",
+              "type": "string"
             },
             {
               "internalType": "address",
@@ -972,6 +1012,16 @@ export const CONTRACT_ABI = [
           "type": "uint256"
         },
         {
+          "internalType": "string",
+          "name": "dividendPayout",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "expectedReturn",
+          "type": "string"
+        },
+        {
           "internalType": "address",
           "name": "owner",
           "type": "address"
@@ -1062,6 +1112,16 @@ export const CONTRACT_ABI = [
           "internalType": "uint256",
           "name": "_tokenPrice",
           "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_dividendPayout",
+          "type": "string"
+        },
+        {
+          "internalType": "string",
+          "name": "_expectedReturn",
+          "type": "string"
         }
       ],
       "name": "tokenizeProperty",
