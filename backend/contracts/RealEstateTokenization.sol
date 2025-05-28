@@ -13,6 +13,8 @@ contract RealEstateTokenization is ERC20, Ownable {
         uint256 tokensSold;
         uint256 tokenPrice;
         uint256 totalDividends;
+        string dividendPayout;
+        string expectedReturn;
         address owner;
         bool isActive;
     }
@@ -37,7 +39,14 @@ contract RealEstateTokenization is ERC20, Ownable {
     constructor() ERC20("RealEstateToken", "RET") Ownable(msg.sender) {}
 
     //Function to tokenize a new property
-    function tokenizeProperty( string memory _metadataCID, string memory _propertyName, uint256 _totalTokens, uint256 _tokenPrice) external {
+    function tokenizeProperty( 
+        string memory _metadataCID, 
+        string memory _propertyName, 
+        uint256 _totalTokens, 
+        uint256 _tokenPrice, 
+        string memory _dividendPayout,
+        string memory _expectedReturn
+        ) external {
         require(_totalTokens > 0, "Total tokens must be greater than 0");
         require(_tokenPrice > 0, "Token price must be greater than 0");
 
@@ -52,6 +61,8 @@ contract RealEstateTokenization is ERC20, Ownable {
             totalTokens: _totalTokens,
             tokensSold: 0,
             tokenPrice: _tokenPrice,
+            dividendPayout: _dividendPayout,
+            expectedReturn: _expectedReturn,
             totalDividends: 0,
             owner: msg.sender,
             isActive: true 
