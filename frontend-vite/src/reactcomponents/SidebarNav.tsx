@@ -63,9 +63,8 @@ export function SidebarNav({ isOpen, toggleSidebar, onSelect, activeSection }: S
           </h2>
           <nav className="space-y-1">
             {mainNavItems.map((item) => (
-              <Link to={item.to}>
+              <Link to={item.to} key={item.key}>
               <Button
-                key={item.key}
                 onClick={() => onSelect(item.key)}
                 variant="ghost"
                 className={`${
