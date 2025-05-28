@@ -1,15 +1,14 @@
 
 import { Button } from "@/components/ui/button";
 import {
-  BarChart3,
   BarChartIcon,
   Building2,
   Coins,
-  Users,
   ChevronLeft,
   ChevronRight,
   Settings,
 } from "lucide-react";
+import { Link } from "react-router";
 
 interface SidebarNavProps {
   isOpen: boolean;
@@ -22,17 +21,16 @@ interface NavItem {
   title: string;
   key: string;
   icon: React.ElementType;
+  to: string;
 }
 
 export function SidebarNav({ isOpen, toggleSidebar, onSelect, activeSection }: SidebarNavProps) {
 
   const mainNavItems: NavItem[] = [
-    { title: "Dashboard", key: "dashboard", icon: BarChartIcon },
-    { title: "My Properties", key: "properties", icon: Building2 },
-    { title: "Distribute Dividends", key: "dividends", icon: Coins },
-    { title: "Investors", key: "investors", icon: Users },
-    { title: "Analytics", key: "analytics", icon: BarChart3 },
-    { title: "Settings", key: "settings", icon: Settings },
+    { title: "Dashboard", key: "dashboard", icon: BarChartIcon, to: "#" },
+    { title: "Properties", key: "properties", icon: Building2, to: "/marketplace" },
+    { title: "Dividends", key: "dividends", icon: Coins, to: "/investor-dividend-dashboard" },
+    { title: "Settings", key: "settings", icon: Settings, to: "#" },
   ];
 
   return (
@@ -65,6 +63,7 @@ export function SidebarNav({ isOpen, toggleSidebar, onSelect, activeSection }: S
           </h2>
           <nav className="space-y-1">
             {mainNavItems.map((item) => (
+              <Link to={item.to}>
               <Button
                 key={item.key}
                 onClick={() => onSelect(item.key)}
@@ -78,6 +77,7 @@ export function SidebarNav({ isOpen, toggleSidebar, onSelect, activeSection }: S
                 <item.icon className="h-5 w-5 text-gray-600" />
                 {isOpen && <span className="ml-3">{item.title}</span>}
               </Button>
+              </Link>
             ))}
           </nav>
         </div>
