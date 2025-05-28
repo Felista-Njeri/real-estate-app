@@ -120,6 +120,8 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
     }
   };
 
+  if(!data) return null;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
@@ -135,6 +137,20 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
             <div className="flex justify-between text-sm">
               <span>Your Holdings:</span>
               <span>{(Number(investorBalance)).toLocaleString() || "0"} tokens</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span>Expected return:</span>
+              <span>{data.expectedReturn || 0}%</span>
+            </div>
+            <div className="flex justify-between text-sm text-sage-700">
+              <span>Actual return:</span>
+              <span>
+                 {(
+                    (unclaimedDividends / 1e18 * 260000) /
+                    (Number(investorBalance) * Number(data.tokenPrice) / 1e18 * 260000) *
+                    100
+                  ).toFixed(2)}%
+                </span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Total Dividends:</span>
