@@ -121,6 +121,8 @@ const Tokenize = () => {
     const description = formData.get("description") as string;
     const totalTokens = formData.get("totalTokens") as string;
     const tokenPrice = formData.get("tokenPrice") as string;
+    const dividendPayout = formData.get("dividendPayout") as string;
+    const expectedReturn = formData.get("expectedReturn") as string;
 
     if (!propertyName || !location || !totalTokens || !tokenPrice) {
       toast({
@@ -190,11 +192,13 @@ const Tokenize = () => {
           propertyName,
           totalTokensBigInt,
           tokenPriceBigInt,
+          dividendPayout,
+          expectedReturn,
         ],
       });
 
       if (hash) {
-        setTransactionHash(hash as `0x${string}`); // Store transaction hash
+        setTransactionHash(hash as `0x${string}`);
      
         setTokenizedProperty({
           name: propertyName,
@@ -375,7 +379,27 @@ const Tokenize = () => {
 
                 <div>
                   <span className="font-semibold">Property Value: {(totalTokensCalc * tokenPriceCalc).toLocaleString()} KES</span>
-                </div>    
+                </div> 
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dividendPayout">Dividend Payout</Label>
+                    <Input
+                      id="dividendPayout"
+                      name="dividendPayout"
+                      placeholder="Annually..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="expectedReturn">Expected Returns (%)</Label>
+                    <Input
+                      id="expectedReturn"
+                      name="expectedReturn"
+                      placeholder="12"
+                    />
+                  </div>
+                </div>   
 
                 <Button
                   type="submit"
