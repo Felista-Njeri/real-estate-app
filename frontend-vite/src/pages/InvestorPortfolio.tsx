@@ -367,8 +367,8 @@ const InvestorPortfolio = () => {
                   <p className="text-base font-medium">{holding.tokens.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Token Supply</p>
-                  <p className="text-base font-medium">{property.totalTokens.toLocaleString()}</p>
+                  <p className="text-sm text-gray-500">Token Price</p>
+                  <p className="text-base font-medium">KES {(Number(property.tokenPrice) / 1e18 * 260000).toLocaleString()}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Dividends</p>
