@@ -5,7 +5,7 @@ import { readContract } from '@wagmi/core';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Wallet, TrendingUp, Building2, Coins } from "lucide-react";
+import { Wallet, TrendingUp, Building2 } from "lucide-react";
 import SellModal from "@/reactcomponents/SellModal";
 import DepositDividendsModal from "@/reactcomponents/DepositDividendsModal";
 import ClaimDividendsModal from "@/reactcomponents/ClaimDividendsModal";
