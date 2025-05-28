@@ -8,7 +8,8 @@ import Tokenize from "./pages/Tokenize";
 import PropertyOwnerPortfolio from "./pages/PropertyOwnerPortfolio";
 import NotFound from "./pages/NotFound";
 import Layout from "./Layout";
-
+import InvestorDividendDashboard from "./pages/InvestorDividendDashboard";
+import OwnerDividendDashboard from "./pages/OwnerDividendDashboard";
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
           <Route path="marketplace/:id" element={<PropertyDetails />} />
           <Route path="owner-portfolio" element={<PropertyOwnerPortfolio />} />
           <Route path="investor-portfolio" element={<InvestorPortfolio />} />
+          <Route path="investor-dividend-dashboard" element={<InvestorDividendDashboard />} />
+          <Route path="owner-dividend-dashboard" element={<OwnerDividendDashboard />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
