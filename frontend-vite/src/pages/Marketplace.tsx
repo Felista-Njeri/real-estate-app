@@ -132,7 +132,7 @@ const Marketplace = () => {
           <Card key={index} className="glass-card overflow-hidden hover-transform">
             <div className="relative h-48">
               <img
-                src={property.images.split(",")[0]} // Just first image for now
+                src={property.images.split(",")[0]} // first image 
                 alt={property.propertyName}
                 className="w-full h-full object-cover"
               />
@@ -151,7 +151,7 @@ const Marketplace = () => {
 
             <CardContent>
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500">Total Tokens</p>
                     <p className="font-medium">{property.totalTokens.toLocaleString('en-KE')}</p>
@@ -173,6 +173,10 @@ const Marketplace = () => {
                   <div>
                     <p className="text-gray-500">Dividends</p>
                     <p className="font-medium">{(Number(property.totalDividends) / 1e18 * 2000 * 130).toLocaleString('en-KE')} KES</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Expected Returns</p>
+                    <p className="font-medium text-sage-600">{property.expectedReturn}%</p>
                   </div>
                 </div>
 
