@@ -5,7 +5,7 @@ import { readContract } from '@wagmi/core';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Wallet, TrendingUp, Building2, Coins, MapPin } from "lucide-react";
+import { ArrowRight, TrendingUp, Building2, Coins, MapPin, ArrowUpRight } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import SellModal from "@/reactcomponents/SellModal";
@@ -17,6 +17,7 @@ import { fetchMetadataFromIPFS } from "@/utils/pinata";
 import { Property, PropertyMetaData } from "@/types/index";
 import { parseAbi } from 'viem';
 import { getPublicClient } from '@wagmi/core';
+import { Link } from "react-router";
 
 interface PortfolioItem {
   propertyId: number;
@@ -275,7 +276,12 @@ const InvestorPortfolio = () => {
   return (
     <DashboardLayout>
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
+      <div className="flex items-center justify-between">
       <h1 className="text-4xl font-bold mb-8">Investor Portfolio</h1>
+      <Button>
+        <Link to={`/investor-dividend-dashboard`} className="flex items-center gap-1">Dividend Dashboard <ArrowUpRight size={30} /> </Link>
+      </Button>
+      </div>
 
       {isError && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
@@ -284,15 +290,15 @@ const InvestorPortfolio = () => {
       )}
 
       {/* Key Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard 
           title="Total Value (KES)" 
           value={holdings.reduce((sum, item) => sum + item.value, 0).toLocaleString('en-KE')}
           icon={<Coins className="h-8 w-8 text-sage-600" />} />
-        <StatCard 
+        {/* <StatCard 
           title="Total Tokens" 
           value={holdings.reduce((sum, item) => sum + item.tokens, 0).toLocaleString()}
-          icon={<Wallet className="h-8 w-8 text-sage-600" />} />
+          icon={<Wallet className="h-8 w-8 text-sage-600" />} /> */}
         <StatCard 
           title="Total Tokens" 
           value={holdings.reduce((sum, item) => sum + item.tokens, 0).toLocaleString()}
@@ -355,7 +361,7 @@ const InvestorPortfolio = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-4 gap-4 mb-4">
+              <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-500">Tokens Owned</p>
                   <p className="text-base font-medium">{holding.tokens.toLocaleString()}</p>
@@ -366,14 +372,8 @@ const InvestorPortfolio = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Dividends</p>
-                  <p className="text-base font-medium">KES{(Number(property.totalDividends) / 1e18 * 260000).toLocaleString('en-KE')}</p>
+                  <p className="text-base font-medium">KES {(Number(property.totalDividends) / 1e18 * 260000).toLocaleString('en-KE')}</p>
                 </div>
-                {/* <div>
-                  <p className="text-sm text-gray-500">ROI</p>
-                  <p className={`text-base font-medium ${holding.roi >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {holding.roi.toLocaleString()}%
-                  </p>
-                </div> */}
               </div>
 
             <div className="flex flex-wrap gap-2">
@@ -408,7 +408,7 @@ const InvestorPortfolio = () => {
   )}
 </div>
 
-      {/* Transaction History */}
+      {/* Purchase Transaction History */}
       <Card className="glass-card mb-6">
         <CardHeader>
           <CardTitle>Purchase History</CardTitle>
@@ -443,7 +443,7 @@ const InvestorPortfolio = () => {
         </CardContent>
       </Card>
 
-      {/* Transaction History */}
+      {/* Sell Transaction History */}
       <Card className="glass-card mb-6">
         <CardHeader>
           <CardTitle>Sell History</CardTitle>
@@ -478,10 +478,15 @@ const InvestorPortfolio = () => {
         </CardContent>
       </Card>
 
-      {/* Transaction History */}
+      {/* Claim Dividends Transaction History */}
       <Card className="glass-card">
-        <CardHeader>
+        <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Claim Dividends History</CardTitle>
+          <Link 
+            to={`/investor-dividend-dashboard`} 
+            className="mr-4 flex gap-2 items-center border border-gray-500 py-2 px-4 rounded-sm hover:bg-slate-300">
+            More details <ArrowRight size={25}/>
+          </Link>
         </CardHeader>
         <CardContent>
           <Table>
@@ -506,7 +511,7 @@ const InvestorPortfolio = () => {
                   <TableCell>{transaction.type}</TableCell>
                   <TableCell>{(transaction.totalValueClaimed).toLocaleString('en-KE')} </TableCell>
                   <TableCell>
-                    <span className="px-2 py-1 rounded-full text-xs bg-red-100 text-red-800">
+                    <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
                       Claimed
                     </span>
                   </TableCell>
