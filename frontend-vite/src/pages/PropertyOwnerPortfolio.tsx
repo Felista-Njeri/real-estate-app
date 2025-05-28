@@ -8,10 +8,11 @@ import DepositDividendsModal from "@/reactcomponents/DepositDividendsModal";
 import { Button } from "@/components/ui/button";
 import {
   Building2,
-  Users,
   Coins,
   TrendingUp,
   MapPin,
+  ArrowUpRight,
+  ArrowRight,
 } from "lucide-react";
 import {
   Table,
@@ -175,12 +176,15 @@ const PropertyOwnerPortfolio = () => {
   return (
     <DashboardLayout>
     <div className="container mx-auto px-4 py-12 animate-fadeIn">
-      <h1 className="text-4xl font-bold mb-8">
-        Property Owner Dashboard
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold mb-8">Property Owner Dashboard</h1>
+        <Button>
+          <Link to={`/owner-dividend-dashboard`} className="flex items-center gap-1">Dividend Dashboard <ArrowUpRight size={30} /> </Link>
+        </Button>
+      </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card className="glass-card">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
@@ -203,7 +207,7 @@ const PropertyOwnerPortfolio = () => {
                   Total Revenue
                 </p>
                 <h3 className="text-2xl font-bold">
-                  1,200,000 KES
+                  {(propertiesWithMetadata.reduce((sum, property) => sum + (Number(property.tokensSold) * Number(property.tokenPrice) / 1e18 * 260000), 0)).toLocaleString()} KES
                 </h3>
               </div>
               <Coins className="h-8 w-8 text-sage-600" />
@@ -216,27 +220,13 @@ const PropertyOwnerPortfolio = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Token Sales
+                  Tokens Sold
                 </p>
                 <h3 className="text-2xl font-bold">
-                  560
+                  {(propertiesWithMetadata.reduce((sum, property) => sum + Number(property.tokensSold), 0)).toLocaleString()}
                 </h3>
               </div>
               <TrendingUp className="h-8 w-8 text-sage-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Investors
-                </p>
-                <h3 className="text-2xl font-bold">45</h3>
-              </div>
-              <Users className="h-8 w-8 text-sage-600" />
             </div>
           </CardContent>
         </Card>
@@ -272,7 +262,7 @@ const PropertyOwnerPortfolio = () => {
                       </div>
                     </div>
                     <div className="text-xl font-bold text-emerald-600">
-                      {(Number(property.tokenPrice) /1e18 * 2000 * 130).toLocaleString("en-KE")} KES
+                      {(Number(property.tokenPrice) /1e18 * 2000 * 130).toLocaleString("en-KE")} KES/token
                     </div>
                   </div>
                   
@@ -281,36 +271,37 @@ const PropertyOwnerPortfolio = () => {
                       <p className="text-sm text-gray-500">Token Sales</p>
                       <div className="flex items-center space-x-1">
                         <Progress
-                        //TO DO: Copy lofic from single property detail page
-                          // value={(property.soldTokens / property.totalTokens) * 100}
-                          className="w-full"
+                          value={
+                            ((Number(property.totalTokens) - Number(property.tokensSold)) / (Number(property.totalTokens))) * 100
+                          }
                         />
                         <span className="text-xs text-gray-500">
                           {/* {Math.round((property.soldTokens / property.totalTokens) * 100)}% */}
                         </span>
                       </div>
-                      {/* <p className="text-xs text-gray-500 mt-1">
-                        {property.soldTokens}/{property.totalTokens} tokens sold
-                      </p> */}
+                      <p className="text-sm text-gray-600">
+                        {(Number(property.tokensSold))} of{" "}
+                        {property.totalTokens.toLocaleString('en-KE')} tokens sold
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Monthly Revenue</p>
-                      <p className="text-base font-medium">700,000 KES</p>
+                      <p className="text-sm text-gray-500">Token Sale Revenue</p>
+                      <p className="text-base font-medium">{(Number(property.tokensSold) * Number(property.tokenPrice) / 1e18 * 260000).toLocaleString()} KES</p>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-3 gap-2 mb-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Total Dividends:</span>
+                      <span className="text-gray-500">Total Dividends</span>
                       <p className="font-medium">{((Number(property.totalDividends)) /1e18 * 130 * 2000).toLocaleString('en-KE')} KES</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Tokens:</span>
-                      <p className="font-medium">{property.totalTokens.toLocaleString('en-KE')}</p>
+                      <span className="text-gray-500">Tokens</span>
+                      <p className="font-medium">{property.totalTokens.toLocaleString('en-KE')} tokens</p>
                     </div>
                     <div>
-                      <span className="text-gray-500">Investors:</span>
-                      <p className="font-medium">45</p>
+                      <span className="text-gray-500">Property Value</span>
+                      <p className="font-medium">{(Number(property.totalTokens) * Number(property.tokenPrice) / 1e18 * 260000).toLocaleString()} KES</p>
                     </div>
                   </div>
                   
@@ -335,10 +326,10 @@ const PropertyOwnerPortfolio = () => {
 
       </div>
 
-            {/* Transaction History */}
+            {/* Tokenization Transaction History */}
             <Card className="glass-card mb-4">
               <CardHeader>
-                <CardTitle>Transaction History</CardTitle>
+                <CardTitle>Tokenization History</CardTitle>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -372,8 +363,13 @@ const PropertyOwnerPortfolio = () => {
 
       {/* Dividend Distribution History */}
       <Card className="glass-card">
-        <CardHeader>
+        <CardHeader className="flex flex-row justify-between items-center">
           <CardTitle>Dividend Distribution History</CardTitle>
+          <Link 
+            to={`/owner-dividend-dashboard`} 
+            className="mr-4 flex gap-2 items-center border border-gray-500 py-2 px-4 rounded-sm hover:bg-slate-300">
+            More details <ArrowRight size={25}/>
+          </Link>
         </CardHeader>
         <CardContent>
           <Table>
