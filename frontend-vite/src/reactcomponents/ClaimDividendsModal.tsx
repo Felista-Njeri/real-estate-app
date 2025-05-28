@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { useWriteContract, useAccount, useReadContract } from "wagmi";
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from "../abi/constants";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ const ClaimDividendsModal = ({ propertyId, isOpen, onClose }: ClaimDividendsModa
   const [localLoading, setLocalLoading] = useState(false);
 
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const { writeContractAsync, isSuccess } = useWriteContract({});
 
