@@ -43,6 +43,7 @@ const OwnerDividendDashboard = () => {
 
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isDepositModalOpen, setDepositModalOpen] = useState(false);
+  const [isWithdrawFundsModalOpen, setWithdrawFundsModalOpen] = useState(false);
   const [propertiesWithMetadata, setPropertiesWithMetadata] = useState<(Property & PropertyMetaData)[]>([]);
   const [dividendHistory, setDividendHistory] = useState<Dividend[]>([]);
 
@@ -129,9 +130,9 @@ const OwnerDividendDashboard = () => {
     setSelectedProperty(property); // Set the selected property
     setDepositModalOpen(true); // Open the modal
   };
-    const handleWithdrawFundsClick = (property: Property) => {
+  const handleWithdrawFundsClick = (property: Property) => {
     setSelectedProperty(property); // Set the selected property
-    setDepositModalOpen(true); // Open the modal
+    setWithdrawFundsModalOpen(true); // Open the modal
   };
 
   return (
@@ -178,10 +179,10 @@ const OwnerDividendDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">
-                  Tokens Sold
+                  Withdrawn Funds
                 </p>
                 <h3 className="text-2xl font-bold">
-                  {(propertiesWithMetadata.reduce((sum, property) => sum + Number(property.tokensSold), 0)).toLocaleString()}
+                  {(propertiesWithMetadata.reduce((sum, property) => sum + (Number(property.totalWithdrawn) / 1e18 * 260000), 0)).toLocaleString()} KES
                 </h3>
               </div>
               <TrendingUp className="h-8 w-8 text-sage-600" />
@@ -321,6 +322,7 @@ const OwnerDividendDashboard = () => {
                     Withdraw funds
                   </Button>
                   </div>
+
                 </div>
               </div>
             </Card>
@@ -343,8 +345,8 @@ const OwnerDividendDashboard = () => {
       {selectedProperty && (
         <WithdrawFundsModal
           propertyId={selectedProperty.propertyId}
-          isOpen={isDepositModalOpen}
-          onClose={() => setDepositModalOpen(false)}
+          isOpen={isWithdrawFundsModalOpen}
+          onClose={() => setWithdrawFundsModalOpen(false)}
         />
       )}
     </div>
