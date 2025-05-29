@@ -209,11 +209,11 @@ const InvestorDividendDashboard = () => {
       {/* Key Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <StatCard 
-          title="Claimed Dividends" 
+          title="Claimed Dividends (KES)" 
           value={claimDividendHistory.reduce((sum, item) => sum + item.totalValueClaimed, 0).toLocaleString()}
           icon={<Wallet className="h-8 w-8 text-sage-600" />} />
         <StatCard 
-          title="Unclaimed Dividends" 
+          title="Unclaimed Dividends (KES)" 
           value={holdings.reduce((sum, item) => sum + Number(item.unclaimedDividends) / 1e18 * 260000, 0).toLocaleString()}
           icon={<TrendingUp className="h-8 w-8 text-sage-600" />} />
         <StatCard 
@@ -275,7 +275,7 @@ const InvestorDividendDashboard = () => {
                 <TableHead>Value (KES)</TableHead>
                 <TableHead>Tokens Owned</TableHead>
                 <TableHead>Total Dividends (KES)</TableHead>
-                <TableHead>Unclaimed Dividends</TableHead>
+                <TableHead>Unclaimed Dividends (KES)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
