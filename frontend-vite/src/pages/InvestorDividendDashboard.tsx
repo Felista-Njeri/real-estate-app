@@ -271,11 +271,11 @@ const InvestorDividendDashboard = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Property Name</TableHead>
-                <TableHead>Location</TableHead>
                 <TableHead>Value (KES)</TableHead>
                 <TableHead>Tokens Owned</TableHead>
-                <TableHead>Total Dividends (KES)</TableHead>
+                <TableHead>Overall Dividends (KES)</TableHead>
                 <TableHead>Unclaimed Dividends (KES)</TableHead>
+                <TableHead>Claimed Dividends (KES)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
@@ -283,14 +283,12 @@ const InvestorDividendDashboard = () => {
             <TableBody>
               {propertiesWithMetadata.map((property) => {
                const holding = holdings.find(h => h.propertyId == property.propertyId);
+               const transaction = claimDividendHistory.find(t => t.property?.trim().toLowerCase() === property.propertyName.trim().toLowerCase());
                if (!holding) return <p>There is an error somewhere</p>;
                return (
                 <TableRow key={property.propertyId}>
-                  <TableCell>
-                    {property.propertyName}
-                  </TableCell>
                   <TableCell className="font-medium">
-                    {property.location}
+                    {property.propertyName}
                   </TableCell>
                   <TableCell>{holding.value.toLocaleString('en-KE')}</TableCell>
                   <TableCell>{holding.tokens.toLocaleString()}</TableCell>
@@ -298,6 +296,7 @@ const InvestorDividendDashboard = () => {
                     {(Number(property.totalDividends) / 1e18 * 260000).toLocaleString('en-KE')}
                   </TableCell>
                   <TableCell>{(holding.unclaimedDividends / 1e18 * 260000).toLocaleString()}</TableCell>
+                  <TableCell>{(transaction?.totalValueClaimed ?? 0).toLocaleString()}</TableCell>
                   <TableCell>
                     {holding.unclaimedDividends > 0 ? (
                       <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
