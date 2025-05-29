@@ -585,6 +585,11 @@ export const CONTRACT_ABI = [
               "internalType": "bool",
               "name": "isActive",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalWithdrawn",
+              "type": "uint256"
             }
           ],
           "internalType": "struct RealEstateTokenization.Property[]",
@@ -704,6 +709,11 @@ export const CONTRACT_ABI = [
               "internalType": "bool",
               "name": "isActive",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalWithdrawn",
+              "type": "uint256"
             }
           ],
           "internalType": "struct RealEstateTokenization.Property[]",
@@ -793,6 +803,11 @@ export const CONTRACT_ABI = [
               "internalType": "bool",
               "name": "isActive",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalWithdrawn",
+              "type": "uint256"
             }
           ],
           "internalType": "struct RealEstateTokenization.Property[]",
@@ -869,6 +884,11 @@ export const CONTRACT_ABI = [
               "internalType": "bool",
               "name": "isActive",
               "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalWithdrawn",
+              "type": "uint256"
             }
           ],
           "internalType": "struct RealEstateTokenization.Property",
@@ -1030,6 +1050,11 @@ export const CONTRACT_ABI = [
           "internalType": "bool",
           "name": "isActive",
           "type": "bool"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalWithdrawn",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",

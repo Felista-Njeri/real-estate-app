@@ -9,6 +9,7 @@ export interface Property {
     isActive: boolean;
     dividendPayout?: string;
     expectedReturn?: string;
+    totalWithdrawn?: bigint;
 }
   
 export interface PropertyMetaData {
