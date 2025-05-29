@@ -27,6 +27,7 @@ import { Link } from "react-router";
 import { parseAbi } from 'viem';
 import { getPublicClient } from '@wagmi/core';
 import { wagmiconfig }  from "../../wagmiconfig";
+import WithdrawFundsModal from "@/reactcomponents/WithdrawFundsModal";
 
 type Dividend = {
   id: string;
@@ -128,6 +129,10 @@ const OwnerDividendDashboard = () => {
     setSelectedProperty(property); // Set the selected property
     setDepositModalOpen(true); // Open the modal
   };
+    const handleWithdrawFundsClick = (property: Property) => {
+    setSelectedProperty(property); // Set the selected property
+    setDepositModalOpen(true); // Open the modal
+  };
 
   return (
     <DashboardLayout>
@@ -183,20 +188,6 @@ const OwnerDividendDashboard = () => {
             </div>
           </CardContent>
         </Card>
-
-        {/* <Card className="glass-card">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Total Investors
-                </p>
-                <h3 className="text-2xl font-bold">45</h3>
-              </div>
-              <Users className="h-8 w-8 text-sage-600" />
-            </div>
-          </CardContent>
-        </Card> */}
       </div>
 
             {/* Dividend Distribution History */}
@@ -309,18 +300,27 @@ const OwnerDividendDashboard = () => {
                     </div>
                   </div>
                   
-                  <Button size="sm" variant="outline" className="mr-2">
+                  <div className="grid grid-cols-3 gap-2">
+                  <Button size="sm" variant="outline">
                     <Link to={`/marketplace/${property.propertyId}`}>
                       Manage Property
                     </Link>
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-sage-600 mx-4 text-white px-4 py-2 rounded-md hover:bg-sage-700"
+                    className="bg-sage-600 text-white px-4 py-2 rounded-md hover:bg-sage-700"
                     onClick={() => handleDepositDividendClick(property)}
                   >
                     Deposit Dividends
                   </Button>
+                  <Button
+                    size="sm"
+                    className="bg-sage-600 text-white px-4 py-2 rounded-md hover:bg-sage-700"
+                    onClick={() => handleWithdrawFundsClick(property)}
+                  >
+                    Withdraw funds
+                  </Button>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -333,6 +333,15 @@ const OwnerDividendDashboard = () => {
       {/* Deposit Dividends Modal */}
       {selectedProperty && (
         <DepositDividendsModal
+          propertyId={selectedProperty.propertyId}
+          isOpen={isDepositModalOpen}
+          onClose={() => setDepositModalOpen(false)}
+        />
+      )}
+
+      {/* Withdraw Funds Modal */}
+      {selectedProperty && (
+        <WithdrawFundsModal
           propertyId={selectedProperty.propertyId}
           isOpen={isDepositModalOpen}
           onClose={() => setDepositModalOpen(false)}
