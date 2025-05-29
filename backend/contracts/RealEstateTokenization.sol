@@ -17,6 +17,7 @@ contract RealEstateTokenization is ERC20, Ownable {
         string expectedReturn;
         address owner;
         bool isActive;
+        uint256 totalWithdrawn;
     }
 
     mapping(uint256 => Property) public properties;  //Mapping to store properties by their ID
@@ -65,7 +66,8 @@ contract RealEstateTokenization is ERC20, Ownable {
             expectedReturn: _expectedReturn,
             totalDividends: 0,
             owner: msg.sender,
-            isActive: true 
+            isActive: true,
+            totalWithdrawn: 0
         });
 
         ownerToProperties[msg.sender].push(propertyId);
@@ -253,6 +255,8 @@ contract RealEstateTokenization is ERC20, Ownable {
         require(contractBalance >= _amount, "Not enough funds in contract");
 
         payable(property.owner).transfer(_amount);
+
+        property.totalWithdrawn += _amount;
 
         emit FundsWithdrawn(_propertyId, property.owner, _amount);
 
