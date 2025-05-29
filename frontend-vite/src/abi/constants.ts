@@ -1214,6 +1214,11 @@ export const CONTRACT_ABI = [
           "internalType": "uint256",
           "name": "_propertyId",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
         }
       ],
       "name": "withdrawFunds",
