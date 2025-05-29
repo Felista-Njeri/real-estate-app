@@ -243,18 +243,18 @@ contract RealEstateTokenization is ERC20, Ownable {
     }
 
     //Function for the property owner to withdraw funds
-    function withdrawFunds(uint256 _propertyId) external onlyOwner {
+    function withdrawFunds(uint256 _propertyId, uint256 _amount) external onlyOwner {
         Property storage property = properties[_propertyId];
 
         require(property.owner == msg.sender, "Only the property owner can withdraw funds");
 
         uint256 contractBalance = address(this).balance;
 
-        require(contractBalance > 0, "No funds to withdraw");
+        require(contractBalance >= _amount, "Not enough funds in contract");
 
-        payable(property.owner).transfer(contractBalance);
+        payable(property.owner).transfer(_amount);
 
-        emit FundsWithdrawn(_propertyId, property.owner, contractBalance);
+        emit FundsWithdrawn(_propertyId, property.owner, _amount);
 
     }
 
