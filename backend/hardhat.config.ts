@@ -34,6 +34,22 @@ const config: HardhatUserConfig = {
       accounts: [WALLET_PRIVATE_KEY],
       gasPrice: 1000000000,
     },
+    // base_sepolia: {
+    //   url: 'https://sepolia.base.org',
+    //   accounts: {
+    //     mnemonic: MNEMONIC,
+    //   },
+    //   verify: {
+    //     etherscan: {
+    //       apiUrl: "https://api-sepolia.basescan.org",
+    //       apiKey: process.env.ETHERSCAN_API_KEY
+    //     }
+    //   }
+    // },
+    "base-sepolia": {
+      url: "https://sepolia.base.org",
+      accounts: [WALLET_PRIVATE_KEY],
+    },
     sepolia: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY_SEPOLIA}`,
       accounts: [WALLET_PRIVATE_KEY],
@@ -42,15 +58,15 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       sepolia: ETHERSCAN_API_KEY || "",
-      "lisk-sepolia": "123",
+      "base-sepolia": process.env.BASESCAN_API_KEY as string,
     },
     customChains: [
       {
-        network: "lisk-sepolia",
-        chainId: 4202,
+        network: "base-sepolia",
+        chainId: 84532,
         urls: {
-          apiURL: "https://sepolia-blockscout.lisk.com/api",
-          browserURL: "https://sepolia-blockscout.lisk.com",
+          apiURL: "https://api-sepolia.basescan.org/api",
+          browserURL: "https://sepolia.basescan.org/",
         },
       },
     ],
