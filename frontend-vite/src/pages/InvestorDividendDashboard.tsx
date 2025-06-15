@@ -171,6 +171,7 @@ const InvestorDividendDashboard = () => {
           console.error("Error fetching holdings data:", error);
         } finally {
           setLoading(false);
+          console.log(loading)
         }
       };
   
